@@ -7,7 +7,6 @@ sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
 """
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
-import time
 
 def app():
     my_app = QApplication(sys.argv)
