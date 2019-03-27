@@ -15,7 +15,7 @@ https://stackoverflow.com/questions/35129102/simple-way-to-display-svg-image-in-
 """
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel
-from PyQt5 import QtCore, QtSvg
+from PyQt5 import QtCore
 from PyQt5.QtGui import QPixmap
 
 import time
