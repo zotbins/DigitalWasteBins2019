@@ -20,9 +20,12 @@ https://www.programcreek.com/python/example/99577/PyQt5.QtCore.QPropertyAnimatio
 PyQT Threading and Loops:
 https://stackoverflow.com/questions/49886313/how-to-run-a-while-loop-with-pyqt5
 https://kushaldas.in/posts/pyqt5-thread-example.html
+
+Hiding Labels:
+https://stackoverflow.com/questions/28599883/changing-a-labels-visibility-using-pyqt
 """
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5 import QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject
 from PyQt5.QtGui import QPixmap
@@ -44,11 +47,26 @@ class WasteImage(QLabel):
     pos = pyqtProperty(QPointF, fset=_set_pos)
 
 class Worker(QObject):
-    def __init__(self):
-        pass
+    finished = pyqtSignal() #give a finished signal
+    def __init__(self,parent=None):
+        QObject.__init__(self, parent=parent)
+        self.continue_run = True
+
+    def do_work(self):
+        i = 1
+        while self.continue_run:#give the loop a stoppable condition
+            print(i)
+            QThread.sleep(1)
+            i += 1
+        self.finished.emit() #emeit the finished signal when the loop is done
+    def stop(self):
+        self.continue_run = False
+
+
 
 class App(QWidget):
 
+    stop_signal = pyqtSignal()
     def __init__(self):
         super().__init__()#inhreitance from QWidget
         self.title = 'PyQT Window'
@@ -75,11 +93,10 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         # self.statusBar().showMessage('Message in statusbar.')
 
+        #=======creating the Image Lables=======
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         # self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         # self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
-
-        self.waste_images_animation()
 
         #=====Displaying the Background Frame Image===========
         background = QLabel(self)
@@ -87,17 +104,44 @@ class App(QWidget):
         back_pixmap = back_pixmap.scaled(5038/10, 9135/10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         background.setPixmap(back_pixmap)
 
+        #=====Starting the animation========
+        self.waste_images_animation()
+
+        #=====Thread========
+        self.thread = QThread()
+        self.worker = Worker()
+        self.stop_signal.connect(self.worker.stop) # connect stop signal to worker stop method
+        self.worker.moveToThread(self.thread)      # inherit from self.thread
+        self.thread.started.connect(self.worker.do_work) #when the thread starts, star worker
+        self.thread.finished.connect(self.worker.stop) #when the thread finishes, stop worker
+
+        #start the thread
+        self.thread.start()
+        button = QPushButton('Stop', self)
+        button.move(100, 70)
+        button.clicked.connect(self.stop_thread)
+
+        #====Showing Widget======
         #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         self.show() #uncomment if you don't want fullscreen.
 
     def waste_images_animation(self):
-        self.anim = QPropertyAnimation(self.WasteImage1,b"pos")
-        self.anim.setDuration(1000)
+        #images = []
+        self.anim1 = QPropertyAnimation(self.WasteImage1,b"pos")
+        self.anim1.setDuration(2000) #1 second
+        self.anim1.setStartValue(QPointF(10, 2132.126/10))
+        self.anim1.setEndValue(QPointF(1508.264/10, 2132.126/10))
+        self.anim1.setLoopCount(10)
+        self.anim1.start()
 
-        self.anim.setStartValue(QPointF(10, 2132.126/10))
-        self.anim.setEndValue(QPointF(1508.264/10, 2132.126/10))
 
-        self.anim.start()
+
+
+
+
+
+    def stop_thread(self):
+        self.stop_signal.emit()
 
 if __name__ == "__main__":
     #creating new class
