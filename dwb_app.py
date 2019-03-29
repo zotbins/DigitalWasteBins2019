@@ -16,11 +16,15 @@ https://stackoverflow.com/questions/35129102/simple-way-to-display-svg-image-in-
 Animations:
 http://zetcode.com/pyqt/qpropertyanimation/
 https://www.programcreek.com/python/example/99577/PyQt5.QtCore.QPropertyAnimation
+
+PyQT Threading and Loops:
+https://stackoverflow.com/questions/49886313/how-to-run-a-while-loop-with-pyqt5
+https://kushaldas.in/posts/pyqt5-thread-example.html
 """
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QFrame, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5 import QtCore
-from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt
+from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject
 from PyQt5.QtGui import QPixmap
 
 import time
@@ -38,6 +42,10 @@ class WasteImage(QLabel):
         self.move(pos.x(), pos.y())
 
     pos = pyqtProperty(QPointF, fset=_set_pos)
+
+class Worker(QObject):
+    def __init__(self):
+        pass
 
 class App(QWidget):
 
@@ -67,43 +75,24 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         # self.statusBar().showMessage('Message in statusbar.')
 
-        # label = QLabel(self)
-        # label.move(1508.264/10, 2132.126/10)
-        # pixmap = QPixmap('images/compost/c1.png')
-        # pixmap = pixmap.scaled(2000.000/10, 6000.000/10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        # label.setPixmap(pixmap)
-        # # Uncomment to resize window size to be the same size as the image
-        # # self.resize(pixmap.width(), pixmap.height())
+        self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
+        # self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
+        # self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
 
-        self.WasteImage = WasteImage(self, 'images/compost/c2.png')
-        self.initAnim()
+        self.waste_images_animation()
 
-        #this is the image that is supposed to serve as the frame
+        #=====Displaying the Background Frame Image===========
         background = QLabel(self)
         back_pixmap = QPixmap('images/compost/compost_background.png') #image.jpg (5038,9135)
         back_pixmap = back_pixmap.scaled(5038/10, 9135/10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         background.setPixmap(back_pixmap)
 
-        #self.showFullScreen()
-        self.show() #uncomment if you don't want fullscreen
+        #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        self.show() #uncomment if you don't want fullscreen.
 
-
-        # self.button = QPushButton("Start", self)
-        # self.button.clicked.connect(self.doAnim)
-        # self.button.move(30, 30)
-        #
-        # self.frame = QFrame(self)
-        # self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
-        # self.frame.setGeometry(150, 30, 100, 100)
-        #
-        # self.setGeometry(300, 300, 380, 300)
-        # self.setWindowTitle('Animation')
-
-        self.show()
-
-    def initAnim(self):
-        self.anim = QPropertyAnimation(self.WasteImage,b"pos")
-        self.anim.setDuration(3000)
+    def waste_images_animation(self):
+        self.anim = QPropertyAnimation(self.WasteImage1,b"pos")
+        self.anim.setDuration(1000)
 
         self.anim.setStartValue(QPointF(10, 2132.126/10))
         self.anim.setEndValue(QPointF(1508.264/10, 2132.126/10))
