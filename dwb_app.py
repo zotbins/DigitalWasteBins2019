@@ -33,7 +33,7 @@ https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5 import QtCore
-from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 
 import time
@@ -73,7 +73,7 @@ class App(QWidget):
     stop_signal = pyqtSignal()
 
     wait_signal = False   #boolean to be used to wait between animations
-    animation_number = 1  #int to be used to start an animation
+    animation_num = 1  #int to be used to start an animation
 
     def __init__(self):
         super().__init__()#inhreitance from QWidget
@@ -105,6 +105,7 @@ class App(QWidget):
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+        self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
 
         #define QPropertyAnimation Objects
         self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
@@ -129,6 +130,8 @@ class App(QWidget):
         self.waste_anim3.setStartValue(QPointF(10, 2132.126 / 10))
         self.waste_anim3.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
 
+        self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
+
 
         #=====Displaying the Background Frame Image===========
         background = QLabel(self)
@@ -141,6 +144,11 @@ class App(QWidget):
         self.waste_anim1.start()
         print(self.waste_anim1.state())
         print(self.waste_anim1.totalDuration())
+
+        #============QTimer============
+        timer = QTimer(self)
+        timer.timeout.connect(self.say_something)
+        timer.start(1000)
         #self.waste_anim1.setPaused(True)
 
         #=====Thread========
@@ -160,6 +168,31 @@ class App(QWidget):
         #====Showing Widget======
         #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         self.show() #uncomment if you don't want fullscreen.
+
+    def say_something(self):
+        print("hellp")
+
+    def animation_wait_and_hide(self,animation_num):
+        """
+        This function implements a wait. Then hides the images. Then it triggers a response to start the next animation.
+         """
+        assert(animation_num>=1 and animation_num <=3), "wait_and_hide: animation_num is out of range"
+
+        QThread.sleep(4000) #sleeps for 4 seconds
+        self.images_list[animation_num].hide()
+        if animation_num == 3:
+            animation_num = 1
+        else:
+            animation_num += 1
+
+    def animation_show_and_start(self, animation_num):
+        """
+        This function is meant to show the image and start the animation.
+        """
+        assert (animation_num >= 1 and animation_num <= 3), "show_and_start: animation_num is out of range"
+        self.images_list[animation_num].show()
+        self.waste_anim_list[animation_num].start()
+
 
     def stop_thread(self):
         self.stop_signal.emit()
