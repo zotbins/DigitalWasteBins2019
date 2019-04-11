@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLay
 from PyQt5 import QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
+from random import randint
 
 import time
 import datetime
@@ -86,6 +87,7 @@ class App(QWidget):
         #determines the size of the window
         self.width = 5038.176/10
         self.height = 9135.347/10
+        self.imageIndex = 0
 
         #determines background color of the window
         self.setAutoFillBackground(True)
@@ -113,9 +115,7 @@ class App(QWidget):
         self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
 
         #hide the animations initially
-        self.WasteImage1.hide()
-        self.WasteImage2.hide()
-        self.WasteImage3.hide()
+        self.hide_all()
 
         #defining the animations
         self.waste_anim1.setDuration(2000)  # 2 seconds
@@ -140,15 +140,16 @@ class App(QWidget):
         background.setPixmap(back_pixmap)
 
         #=====Starting the animation========
-        self.WasteImage1.show()
-        self.waste_anim1.start()
-        print(self.waste_anim1.state())
-        print(self.waste_anim1.totalDuration())
+        #self.WasteImage1.show()
+        #self.waste_anim1.start()
+        #print(self.waste_anim1.state())
+        #print(self.waste_anim1.totalDuration())
 
         #============QTimer============
         timer = QTimer(self)
-        timer.timeout.connect(self.say_something)
-        timer.start(1000)
+        timer.timeout.connect(self.change_image)
+        timer.start(5000)
+        
         #self.waste_anim1.setPaused(True)
 
         #=====Thread========
@@ -169,8 +170,21 @@ class App(QWidget):
         #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         self.show() #uncomment if you don't want fullscreen.
 
-    def say_something(self):
-        print("hellp")
+    def change_image(self):
+        self.hide_all()
+        img_obj = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
+        ani_obj = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
+        self.imageIndex += 1
+        if self.imageIndex > 2:
+            self.imageIndex = 0
+        x = self.imageIndex
+        img_obj[x].show()
+        ani_obj[x].start()
+    
+    def hide_all(self):
+        self.WasteImage1.hide()
+        self.WasteImage2.hide()
+        self.WasteImage3.hide()
 
     def animation_wait_and_hide(self,animation_num):
         """
