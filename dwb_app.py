@@ -54,21 +54,22 @@ class WasteImage(QLabel):
 
     pos = pyqtProperty(QPointF, fset=_set_pos)
 
-class Worker(QObject):
-    finished = pyqtSignal() #give a finished signal
-    def __init__(self,parent=None):
-        QObject.__init__(self, parent=parent)
-        self.continue_run = True
-    def do_work(self):
-        i = 1
-        while self.continue_run:#give the loop a stoppable condition
-            print(i)
-            QThread.sleep(1)
-            i += 1
-        self.finished.emit() #emit the finished signal when the loop is done
-    def stop(self):
-        self.continue_run = False
+class BreakBeamThread(QThread):
 
+    def __init__(self):
+        QThread.__init__(self)
+
+    def run(self):
+        while True:
+            print("hello")
+            time.sleep(2)
+
+    def __del__(self):
+        self.wait()
+
+    def printHello(self):
+        print("hello") 
+        
 class App(QWidget):
 
     stop_signal = pyqtSignal()
@@ -101,6 +102,10 @@ class App(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
+
+        # =============Threads================
+        #self.BreakThread = BreakBeamThread()
+        #self.BreakThread.start()
         # self.statusBar().showMessage('Message in statusbar.')
 
         #=======creating the Image Lables=======
@@ -150,22 +155,6 @@ class App(QWidget):
         timer.timeout.connect(self.change_image)
         timer.start(5000)
         
-        #self.waste_anim1.setPaused(True)
-
-        #=====Thread========
-        # self.thread = QThread()
-        # self.worker = Worker(self)
-        # self.stop_signal.connect(self.worker.stop) # connect stop signal to worker stop method
-        # self.worker.moveToThread(self.thread)      # inherit from self.thread
-        # self.thread.started.connect(self.worker.do_work) #when the thread starts, start worker
-        # self.thread.finished.connect(self.worker.stop) #when the thread finishes, stop worker
-        #
-        # #start the thread
-        # self.thread.start()
-        # button = QPushButton('Stop', self)
-        # button.move(100, 70)
-        # button.clicked.connect(self.stop_thread)
-
         #====Showing Widget======
         #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         self.show() #uncomment if you don't want fullscreen.
