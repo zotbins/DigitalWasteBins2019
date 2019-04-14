@@ -55,20 +55,22 @@ class WasteImage(QLabel):
     pos = pyqtProperty(QPointF, fset=_set_pos)
 
 class BreakBeamThread(QThread):
+    my_signal = pyqtSignal()
 
     def __init__(self):
         QThread.__init__(self)
 
     def run(self):
+        i = 0 
         while True:
-            print("hello")
+            if(i % 5 == 0 and i > 0):
+                self.my_signal.emit()
+            i += 1
             time.sleep(2)
+
 
     def __del__(self):
         self.wait()
-
-    def printHello(self):
-        print("hello") 
         
 class App(QWidget):
 
@@ -104,8 +106,9 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         # =============Threads================
-        #self.BreakThread = BreakBeamThread()
-        #self.BreakThread.start()
+        self.BreakThread = BreakBeamThread()
+        self.BreakThread.start()
+        self.BreakThread.my_signal.connect(self.printHello)
         # self.statusBar().showMessage('Message in statusbar.')
 
         #=======creating the Image Lables=======
@@ -175,30 +178,8 @@ class App(QWidget):
         self.WasteImage2.hide()
         self.WasteImage3.hide()
 
-    def animation_wait_and_hide(self,animation_num):
-        """
-        This function implements a wait. Then hides the images. Then it triggers a response to start the next animation.
-         """
-        assert(animation_num>=1 and animation_num <=3), "wait_and_hide: animation_num is out of range"
-
-        QThread.sleep(4000) #sleeps for 4 seconds
-        self.images_list[animation_num].hide()
-        if animation_num == 3:
-            animation_num = 1
-        else:
-            animation_num += 1
-
-    def animation_show_and_start(self, animation_num):
-        """
-        This function is meant to show the image and start the animation.
-        """
-        assert (animation_num >= 1 and animation_num <= 3), "show_and_start: animation_num is out of range"
-        self.images_list[animation_num].show()
-        self.waste_anim_list[animation_num].start()
-
-
-    def stop_thread(self):
-        self.stop_signal.emit()
+    def printHello(self):
+        print("hello world")
 
 if __name__ == "__main__":
     #creating new class
