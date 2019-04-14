@@ -63,7 +63,7 @@ class BreakBeamThread(QThread):
     def run(self):
         i = 0 
         while True:
-            if(i % 5 == 0 and i > 0):
+            if(i % 10 == 0 and i > 0):
                 self.my_signal.emit()
             i += 1
             time.sleep(2)
@@ -115,12 +115,15 @@ class App(QWidget):
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
         self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
+        self.diaglog_list = [self.WasteDiag1]
 
         #define QPropertyAnimation Objects
         self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
         self.waste_anim2 = QPropertyAnimation(self.WasteImage2, b"pos")
         self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
+        self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
 
         #hide the animations initially
         self.hide_all()
@@ -138,6 +141,10 @@ class App(QWidget):
         self.waste_anim3.setStartValue(QPointF(10, 2132.126 / 10))
         self.waste_anim3.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
 
+        self.waste_anim4.setDuration(2000)  # 2 seconds
+        self.waste_anim4.setStartValue(QPointF(10, 2132.126 / 10))
+        self.waste_anim4.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
+
         self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
 
@@ -154,9 +161,9 @@ class App(QWidget):
         #print(self.waste_anim1.totalDuration())
 
         #============QTimer============
-        timer = QTimer(self)
-        timer.timeout.connect(self.change_image)
-        timer.start(5000)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.change_image)
+        self.timer.start(5000)
         
         #====Showing Widget======
         #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
@@ -177,9 +184,15 @@ class App(QWidget):
         self.WasteImage1.hide()
         self.WasteImage2.hide()
         self.WasteImage3.hide()
+        self.WasteDiag1.hide()
 
     def printHello(self):
-        print("hello world")
+        self.hide_all()
+        self.timer.stop()
+        self.WasteDiag1.show()
+        self.waste_anim4.start()
+        self.timer.start(5000)
+
 
 if __name__ == "__main__":
     #creating new class
