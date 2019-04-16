@@ -43,12 +43,19 @@ import datetime
 class WasteImage(QLabel):
     def __init__(self,parent,image_file):
         super().__init__(parent)
-        pix = QPixmap(image_file)
-        pix = pix.scaled(2000.000 / 10, 6000.000 / 10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        self.h = 2000.000/10
-        self.w = 6000.000/10
-        self.setPixmap(pix)
 
+        self.image_file = image_file
+
+        pix = QPixmap(self.image_file)
+        pix = pix.scaled(2000.000 / 10, 6000.000 / 10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+
+        self.setPixmap(pix)
+    def new_pos(self,x,y):
+        self.move(x,y)
+    def new_size(self,h,w):
+        pix = QPixmap(self.image_file)
+        pix = pix.scaled(h,w,QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.setPixmap(pix)
     def _set_pos(self, pos):
         self.move(pos.x(), pos.y())
 
@@ -63,10 +70,11 @@ class BreakBeamThread(QThread):
     def run(self):
         i = 0 
         while True:
-            if(i % 10 == 0 and i > 0):
+            if(i%11==0 and i>0):
                 self.my_signal.emit()
-            i += 1
-            time.sleep(2)
+            i = randint(1,100)
+            print(i)
+            time.sleep(1)
 
 
     def __del__(self):
@@ -115,14 +123,16 @@ class App(QWidget):
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
-        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
-        self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
-        self.diaglog_list = [self.WasteDiag1]
+
+        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png') #517.841,1032.501
+        self.WasteDiag1.new_pos(517.841/10,1032.501/10)
+        self.WasteDiag1.new_size(3998.610 / 10,5473.709 / 10)
 
         #define QPropertyAnimation Objects
         self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
         self.waste_anim2 = QPropertyAnimation(self.WasteImage2, b"pos")
         self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
+
         self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
 
         #hide the animations initially
@@ -141,10 +151,13 @@ class App(QWidget):
         self.waste_anim3.setStartValue(QPointF(10, 2132.126 / 10))
         self.waste_anim3.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
 
-        self.waste_anim4.setDuration(2000)  # 2 seconds
-        self.waste_anim4.setStartValue(QPointF(10, 2132.126 / 10))
-        self.waste_anim4.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
+        self.waste_anim4.setDuration(1000)  # 2 seconds
+        self.waste_anim4.setStartValue(QPointF(517.07/10, 10 ))
+        self.waste_anim4.setEndValue(QPointF(517.07/10, 2620.71/10)) #517.07/10,2620.71/10
 
+        #======All Lists defined here======
+        self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
+        self.diaglog_list = [self.WasteDiag1]
         self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
 
