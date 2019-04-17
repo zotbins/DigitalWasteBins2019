@@ -32,7 +32,7 @@ https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html
 """
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt,QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
@@ -43,7 +43,6 @@ import datetime
 class WasteImage(QLabel):
     def __init__(self,parent,image_file):
         super().__init__(parent)
-
         self.image_file = image_file
 
         pix = QPixmap(self.image_file)
@@ -83,7 +82,6 @@ class BreakBeamThread(QThread):
 class App(QWidget):
 
     stop_signal = pyqtSignal()
-
     wait_signal = False   #boolean to be used to wait between animations
     animation_num = 1  #int to be used to start an animation
 
@@ -91,13 +89,14 @@ class App(QWidget):
         super().__init__()#inhreitance from QWidget
         self.title = 'PyQT Window'
 
+        screenSize = QtWidgets.QDesktopWidget().screenGeometry(1)       # -1 = main monitor, 1 = secondary monitor
         #determines where the window will be created
         self.left = 50
         self.top = 50
 
         #determines the size of the window
-        self.width = 5038.176/10
-        self.height = 9135.347/10
+        self.width = screenSize.width()
+        self.height = screenSize.height()
         self.imageIndex = 0
 
         #determines background color of the window
@@ -123,16 +122,23 @@ class App(QWidget):
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
 
-        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png') #517.841,1032.501
-        self.WasteDiag1.new_pos(517.841/10,1032.501/10)
-        self.WasteDiag1.new_size(3998.610 / 10,5473.709 / 10)
+        #======== new dimensions of pictures =========#
+        self.WasteImage1.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteImage2.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteImage3.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteDiag1.new_pos((self.width / 5.5), 10)
+        self.WasteDiag1.new_size(self.width / 1.5 , self.height / 1.5)
 
         #define QPropertyAnimation Objects
+        
+        #image animations
         self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
         self.waste_anim2 = QPropertyAnimation(self.WasteImage2, b"pos")
         self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
 
+        #dialog animations
         self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
 
         #hide the animations initially
@@ -140,20 +146,20 @@ class App(QWidget):
 
         #defining the animations
         self.waste_anim1.setDuration(2000)  # 2 seconds
-        self.waste_anim1.setStartValue(QPointF(10, 2132.126 / 10))
-        self.waste_anim1.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
+        self.waste_anim1.setStartValue(QPointF(10, self.height / 4))
+        self.waste_anim1.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
         self.waste_anim2.setDuration(2000)  # 2 seconds
-        self.waste_anim2.setStartValue(QPointF(10, 2132.126 / 10))
-        self.waste_anim2.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
+        self.waste_anim2.setStartValue(QPointF(10, self.height / 4))
+        self.waste_anim2.setEndValue(QPointF((self.width / 3.5) , self.height / 4))
 
         self.waste_anim3.setDuration(2000)  # 2 seconds
-        self.waste_anim3.setStartValue(QPointF(10, 2132.126 / 10))
-        self.waste_anim3.setEndValue(QPointF(1508.264 / 10, 2132.126 / 10))
+        self.waste_anim3.setStartValue(QPointF(10, self.height / 4))
+        self.waste_anim3.setEndValue(QPointF((self.width / 3.5) , self.height / 4))
 
         self.waste_anim4.setDuration(1000)  # 2 seconds
-        self.waste_anim4.setStartValue(QPointF(517.07/10, 10 ))
-        self.waste_anim4.setEndValue(QPointF(517.07/10, 2620.71/10)) #517.07/10,2620.71/10
+        self.waste_anim4.setStartValue(QPointF((self.width / 5.5) , 10 ))
+        self.waste_anim4.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         #======All Lists defined here======
         self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
@@ -164,7 +170,7 @@ class App(QWidget):
         #=====Displaying the Background Frame Image===========
         background = QLabel(self)
         back_pixmap = QPixmap('images/compost/compost_background.png') #image.jpg (5038,9135)
-        back_pixmap = back_pixmap.scaled(5038/10, 9135/10, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        back_pixmap = back_pixmap.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.FastTransformation)
         background.setPixmap(back_pixmap)
 
         #=====Starting the animation========
