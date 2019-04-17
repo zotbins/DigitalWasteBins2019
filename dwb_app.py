@@ -86,7 +86,7 @@ class App(QWidget):
         super().__init__()  # inhreitance from QWidget
         self.title = 'PyQT Window'
 
-        screenSize = QtWidgets.QDesktopWidget().screenGeometry(1)  # -1 = main monitor, 1 = secondary monitor
+        screenSize = QtWidgets.QDesktopWidget().screenGeometry(-1)  # -1 = main monitor, 1 = secondary monitor
         # determines where the window will be created
         self.left = 50
         self.top = 50
@@ -182,8 +182,8 @@ class App(QWidget):
         self.timer.start(5000)
 
         # ====Showing Widget======
-        # self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        self.show()  # uncomment if you don't want fullscreen.
+        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        #self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -201,6 +201,7 @@ class App(QWidget):
         self.WasteImage2.hide()
         self.WasteImage3.hide()
         self.WasteDiag1.hide()
+
 
     def printHello(self):
         self.hide_all()
