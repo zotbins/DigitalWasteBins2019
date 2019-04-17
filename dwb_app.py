@@ -76,7 +76,6 @@ class BreakBeamThread(QThread):
             print(i)
             time.sleep(1)
 
-
     def __del__(self):
         self.wait()
         
