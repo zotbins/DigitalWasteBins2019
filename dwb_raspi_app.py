@@ -13,10 +13,3 @@ while True:
         while(sensor_state==0):
             pass
         print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
-    """
-    if(sensor_state==1 and last_state==0 ):
-        print("Unbroken")
-    if(sensor_state==0 and last_state==1):
-        print("broken")
-    last_state = sensor_state
-    """
