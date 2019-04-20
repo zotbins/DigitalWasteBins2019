@@ -147,11 +147,15 @@ class App(QWidget):
         self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
         # =====Displaying the Background Frame Image===========
-        background = QLabel(self)
-        back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
-        back_pixmap = back_pixmap.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatioByExpanding,
-                                         QtCore.Qt.FastTransformation)
-        background.setPixmap(back_pixmap)
+        # background = QLabel(self)
+        # back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
+        # back_pixmap = back_pixmap.scaled(self.width, self.height,QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation) #,QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation
+        # background.setPixmap(back_pixmap)
+
+        self.background = WasteImage(self, 'images/compost/compost_background.png')
+        self.background.new_size(self.width, self.height)
+        self.background.new_pos(0, 0)
+
 
         # =====Starting the animation========
         # self.WasteImage1.show()
