@@ -47,6 +47,7 @@ class BreakBeamThread(QThread):
 
     def run(self):
         while True:
+            time.sleep(.2)
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
                 while(sensor_state==0):
