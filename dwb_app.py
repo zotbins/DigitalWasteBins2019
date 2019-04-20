@@ -166,8 +166,7 @@ class App(QWidget):
         # =====Displaying the Background Frame Image===========
         background = QLabel(self)
         back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
-        back_pixmap = back_pixmap.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatioByExpanding,
-                                         QtCore.Qt.FastTransformation)
+        back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
         # =====Starting the animation========
