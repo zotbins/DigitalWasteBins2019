@@ -70,6 +70,7 @@ class BreakBeamThread(QThread):
             if (i % 11 == 0 and i > 0):
                 self.my_signal.emit()
             i = randint(1, 100)
+            print(i)
             time.sleep(1)
 
     def __del__(self):
@@ -163,18 +164,11 @@ class App(QWidget):
         self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
         # =====Displaying the Background Frame Image===========
-        print(self.width)
-        print(self.height)
         background = QLabel(self)
         back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
         back_pixmap = back_pixmap.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatioByExpanding,
                                          QtCore.Qt.FastTransformation)
         background.setPixmap(back_pixmap)
-
-
-        # self.background = WasteImage(self, 'images/compost/compost_background.png')
-        # self.background.new_size(self.width, self.height)
-        # self.background.new_pos(0, 0)
 
         # =====Starting the animation========
         # self.WasteImage1.show()
@@ -221,4 +215,4 @@ if __name__ == "__main__":
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
-sys.exit(app.exec_())  # 'exec_' because 'exec' is already a keyword
+sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
