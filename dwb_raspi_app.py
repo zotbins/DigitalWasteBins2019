@@ -13,6 +13,9 @@ import RPi.GPIO as GPIO
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
+# GPIO.setup(17,GPIO.IN)
+# GPIO.setup(27,GPIO.IN)
+# GPIO.setup(22,GPIO.IN)
 
 
 class WasteImage(QLabel):
