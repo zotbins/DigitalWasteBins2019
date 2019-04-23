@@ -29,6 +29,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
+import random
 
 import time
 import datetime
@@ -71,7 +72,7 @@ class BreakBeamThread(QThread):
                 self.my_signal.emit()
             i = randint(1, 100)
             print(i)
-            time.sleep(1)
+            time.sleep(2)
 
     def __del__(self):
         self.wait()
@@ -119,14 +120,28 @@ class App(QWidget):
         self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
         self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
         self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+
         self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
+        self.WasteDiag2 = WasteImage(self, 'images/compost/ant_dialog1.png')
+        self.WasteDiag3 = WasteImage(self, 'images/compost/ant_dialog2.png')
+        self.WasteDiag4 = WasteImage(self, 'images/compost/ant_dialog3.png')
+        self.WasteDiag5 = WasteImage(self, 'images/compost/ant_dialog4.png')
 
         # ======== new dimensions of pictures =========#
         self.WasteImage1.new_size(self.width / 1.5, self.height / 1.5)
         self.WasteImage2.new_size(self.width / 1.5, self.height / 1.5)
         self.WasteImage3.new_size(self.width / 1.5, self.height / 1.5)
+
         self.WasteDiag1.new_pos((self.width / 5.5), 10)
         self.WasteDiag1.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteDiag2.new_pos((self.width / 5.5), 10)
+        self.WasteDiag2.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteDiag3.new_pos((self.width / 5.5), 10)
+        self.WasteDiag3.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteDiag4.new_pos((self.width / 5.5), 10)
+        self.WasteDiag4.new_size(self.width / 1.5, self.height / 1.5)
+        self.WasteDiag5.new_pos((self.width / 5.5), 10)
+        self.WasteDiag5.new_size(self.width / 1.5, self.height / 1.5)
 
         # define QPropertyAnimation Objects
 
@@ -137,6 +152,10 @@ class App(QWidget):
 
         # dialog animations
         self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
+        self.waste_anim5 = QPropertyAnimation(self.WasteDiag2, b"pos")
+        self.waste_anim6 = QPropertyAnimation(self.WasteDiag3, b"pos")
+        self.waste_anim7 = QPropertyAnimation(self.WasteDiag4, b"pos")
+        self.waste_anim8 = QPropertyAnimation(self.WasteDiag5, b"pos")
 
         # hide the animations initially
         self.hide_all()
@@ -157,6 +176,22 @@ class App(QWidget):
         self.waste_anim4.setDuration(1000)  # 2 seconds
         self.waste_anim4.setStartValue(QPointF((self.width / 5.5), 10))
         self.waste_anim4.setEndValue(QPointF((self.width / 5.5), self.height / 3))
+
+        self.waste_anim5.setDuration(1000)  # 2 seconds
+        self.waste_anim5.setStartValue(QPointF((self.width / 5.5), 10))
+        self.waste_anim5.setEndValue(QPointF((self.width / 5.5), self.height / 3))
+
+        self.waste_anim6.setDuration(1000)  # 2 seconds
+        self.waste_anim6.setStartValue(QPointF((self.width / 5.5), 10))
+        self.waste_anim6.setEndValue(QPointF((self.width / 5.5), self.height / 3))
+
+        self.waste_anim7.setDuration(1000)  # 2 seconds
+        self.waste_anim7.setStartValue(QPointF((self.width / 5.5), 10))
+        self.waste_anim7.setEndValue(QPointF((self.width / 5.5), self.height / 3))
+
+        self.waste_anim8.setDuration(1000)  # 2 seconds
+        self.waste_anim8.setStartValue(QPointF((self.width / 5.5), 10))
+        self.waste_anim8.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         # ======All Lists defined here======
         self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
@@ -200,13 +235,22 @@ class App(QWidget):
         self.WasteImage2.hide()
         self.WasteImage3.hide()
         self.WasteDiag1.hide()
+        self.WasteDiag2.hide()
+        self.WasteDiag3.hide()
+        self.WasteDiag4.hide()
+        self.WasteDiag5.hide()
 
 
     def printHello(self):
+        img_obj = [self.WasteDiag1, self.WasteDiag2, self.WasteDiag3, self.WasteDiag4, self.WasteDiag5]
+        diag_obj = [self.waste_anim4, self.waste_anim5, self.waste_anim6, self.waste_anim7, self.waste_anim8]
+
+        n = randint(0,4)
+
         self.hide_all()
         self.timer.stop()
-        self.WasteDiag1.show()
-        self.waste_anim4.start()
+        img_obj[n].show()  #self.WasteDiag1.show()
+        diag_obj[n].start() #self.waste_anim4.start()
         self.timer.start(5000)
 
 
@@ -214,4 +258,4 @@ if __name__ == "__main__":
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
-sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
+    sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
