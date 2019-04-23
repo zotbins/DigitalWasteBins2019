@@ -50,14 +50,13 @@ class BreakBeamThread(QThread):
 
     def run(self):
         while True:
-            time.sleep(.2)
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
                 while(sensor_state==0):
                     sensor_state = GPIO.input(4)
                 self.my_signal.emit()
                 time.sleep(2)
-                print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+                #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
 
     def __del__(self):
         self.wait()
