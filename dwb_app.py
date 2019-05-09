@@ -29,6 +29,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
+import json
 import random
 
 import time
@@ -117,45 +118,41 @@ class App(QWidget):
         # self.statusBar().showMessage('Message in statusbar.')
 
         # =======creating the Image Lables=======
-        self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
-        self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
-        self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+        with open('images.json') as jsonFile:
+            self.data = json.load(jsonFile)
 
-        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
-        self.WasteDiag2 = WasteImage(self, 'images/compost/ant_dialog1.png')
-        self.WasteDiag3 = WasteImage(self, 'images/compost/ant_dialog2.png')
-        self.WasteDiag4 = WasteImage(self, 'images/compost/ant_dialog3.png')
-        self.WasteDiag5 = WasteImage(self, 'images/compost/ant_dialog4.png')
+        self.images_list = []
+        for path in self.data["compost"]["waste_image"]:
+            self.images_list.append(WasteImage(self, path))
+
+
+        self.diaglog_list = []
+        for path in self.data["compost"]["waste_dialogue"]:
+            self.diaglog_list.append(WasteImage(self, path))
 
         # ======== new dimensions of pictures =========#
-        self.WasteImage1.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteImage2.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteImage3.new_size(self.width / 1.5, self.height / 1.5)
+        for image in self.images_list:
+            image.new_size(self.width / 1.5, self.height / 1.5)
 
-        self.WasteDiag1.new_pos((self.width / 5.5), 10)
-        self.WasteDiag1.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag2.new_pos((self.width / 5.5), 10)
-        self.WasteDiag2.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag3.new_pos((self.width / 5.5), 10)
-        self.WasteDiag3.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag4.new_pos((self.width / 5.5), 10)
-        self.WasteDiag4.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag5.new_pos((self.width / 5.5), 10)
-        self.WasteDiag5.new_size(self.width / 1.5, self.height / 1.5)
+        for image in self.diaglog_list:
+            image.new_pos((self.width / 5.5), 10)
+            image.new_size(self.width / 1.5, self.height / 1.5)
+
 
         # define QPropertyAnimation Objects
 
         # image animations
-        self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
-        self.waste_anim2 = QPropertyAnimation(self.WasteImage2, b"pos")
-        self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
+        self.waste_anim1 = QPropertyAnimation(self.images_list[0], b"pos")
+        self.waste_anim2 = QPropertyAnimation(self.images_list[1], b"pos")
+        self.waste_anim3 = QPropertyAnimation(self.images_list[2], b"pos")
+
 
         # dialog animations
-        self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
-        self.waste_anim5 = QPropertyAnimation(self.WasteDiag2, b"pos")
-        self.waste_anim6 = QPropertyAnimation(self.WasteDiag3, b"pos")
-        self.waste_anim7 = QPropertyAnimation(self.WasteDiag4, b"pos")
-        self.waste_anim8 = QPropertyAnimation(self.WasteDiag5, b"pos")
+        self.waste_anim4 = QPropertyAnimation(self.diaglog_list[0], b"pos")
+        self.waste_anim5 = QPropertyAnimation(self.diaglog_list[1], b"pos")
+        self.waste_anim6 = QPropertyAnimation(self.diaglog_list[2], b"pos")
+        self.waste_anim7 = QPropertyAnimation(self.diaglog_list[3], b"pos")
+        self.waste_anim8 = QPropertyAnimation(self.diaglog_list[4], b"pos")
 
         # hide the animations initially
         self.hide_all()
@@ -194,8 +191,8 @@ class App(QWidget):
         self.waste_anim8.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         # ======All Lists defined here======
-        self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
-        self.diaglog_list = [self.WasteDiag1]
+        # self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
+        # self.diaglog_list = [self.WasteDiag1]
         self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
         # =====Displaying the Background Frame Image===========
@@ -221,36 +218,33 @@ class App(QWidget):
 
     def change_image(self):
         self.hide_all()
-        img_obj = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
         ani_obj = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
         self.imageIndex += 1
         if self.imageIndex > 2:
             self.imageIndex = 0
         x = self.imageIndex
-        img_obj[x].show()
+        self.images_list[x].show()
         ani_obj[x].start()
 
     def hide_all(self):
-        self.WasteImage1.hide()
-        self.WasteImage2.hide()
-        self.WasteImage3.hide()
-        self.WasteDiag1.hide()
-        self.WasteDiag2.hide()
-        self.WasteDiag3.hide()
-        self.WasteDiag4.hide()
-        self.WasteDiag5.hide()
+        for image in self.images_list:
+            image.hide()
+
+        for image in self.diaglog_list:
+            image.hide()
+
 
 
     def printHello(self):
-        img_obj = [self.WasteDiag1, self.WasteDiag2, self.WasteDiag3, self.WasteDiag4, self.WasteDiag5]
-        diag_obj = [self.waste_anim4, self.waste_anim5, self.waste_anim6, self.waste_anim7, self.waste_anim8]
+        # img_obj = [self.WasteDiag1, self.WasteDiag2, self.WasteDiag3, self.WasteDiag4, self.WasteDiag5]
+        animationList = [self.waste_anim4, self.waste_anim5, self.waste_anim6, self.waste_anim7, self.waste_anim8]
 
         n = randint(0,4)
 
         self.hide_all()
         self.timer.stop()
-        img_obj[n].show()  #self.WasteDiag1.show()
-        diag_obj[n].start() #self.waste_anim4.start()
+        self.diaglog_list[n].show()  #self.WasteDiag1.show()
+        animationList[n].start() #self.waste_anim4.start()
         self.timer.start(5000)
 
 
