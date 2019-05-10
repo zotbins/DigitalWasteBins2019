@@ -17,8 +17,8 @@
         ],
         "background":
         [
-            "compost_background.png",
-            "compost_background.svg"
+            "images/compost/compost_background.png",
+            "images/compost/compost_background.svg"
         ]
     },
     "recycling":

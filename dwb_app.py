@@ -35,6 +35,8 @@ import random
 import time
 import datetime
 
+# to delete later
+bin_id = "compost"
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -122,12 +124,12 @@ class App(QWidget):
             self.data = json.load(jsonFile)
 
         self.images_list = []
-        for path in self.data["compost"]["waste_image"]:
+        for path in self.data[bin_id]["images"]:
             self.images_list.append(WasteImage(self, path))
 
 
         self.diaglog_list = []
-        for path in self.data["compost"]["waste_dialogue"]:
+        for path in self.data[bin_id]["dialogue"]:
             self.diaglog_list.append(WasteImage(self, path))
 
         # ======== new dimensions of pictures =========#
@@ -197,7 +199,7 @@ class App(QWidget):
 
         # =====Displaying the Background Frame Image===========
         background = QLabel(self)
-        back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
+        back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135) self.data[bin_id][background][0]
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
