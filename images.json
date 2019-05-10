@@ -28,7 +28,7 @@
             "images/recycle/r1.png",
             "images/recycle/r2.png"
         ],
-        "diaglogue":
+        "dialogue":
         [
             "images/recycle/rant_dialog.png",
             "images/recycle/rant_dialog1.png",
@@ -47,9 +47,9 @@
     {
         "images":
         [
-            "images/landfill/t1.png",
-            "images/landfill/t2.png",
-            "images/landfill/t3.png"
+            "images/landfill/l1.png",
+            "images/landfill/l2.png",
+            "images/landfill/l3.png"
         ],
         "dialogue":
         [
