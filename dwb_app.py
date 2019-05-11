@@ -36,7 +36,7 @@ import time
 import datetime
 
 
-r_id = 'landfill'
+r_id = 'recycling'
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):

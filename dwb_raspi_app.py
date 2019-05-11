@@ -100,91 +100,59 @@ class App(QWidget):
         self.BreakThread.my_signal.connect(self.printHello)
         # self.statusBar().showMessage('Message in statusbar.')
 
-        # =======creating the Image Lables=======
-        self.WasteImage1 = WasteImage(self, 'images/compost/c1.png')
-        self.WasteImage2 = WasteImage(self, 'images/compost/c2.png')
-        self.WasteImage3 = WasteImage(self, 'images/compost/c3.png')
+         # ======= all list defined here ========
+        self.images_list = []
+        self.dialog_list = []
+        self.img_anim = []
+        self.dialog_anim = []
 
-        self.WasteDiag1 = WasteImage(self, 'images/compost/ant_dialog.png')
-        self.WasteDiag2 = WasteImage(self, 'images/compost/ant_dialog1.png')
-        self.WasteDiag3 = WasteImage(self, 'images/compost/ant_dialog2.png')
-        self.WasteDiag4 = WasteImage(self, 'images/compost/ant_dialog3.png')
-        self.WasteDiag5 = WasteImage(self, 'images/compost/ant_dialog4.png')
+        # ======= reading json files ===========
+        with open('images.json') as json_file:
+            data = json.load(json_file)
+        self.images_size = len(data[r_id]['images'])
+        self.dial_size = len(data[r_id]['dialogue'])
+        # =======creating the Image Lables=======
+        for obj in data[r_id]['images']:
+            self.images_list.append(WasteImage(self, obj))
+        
+        for obj in data[r_id]['dialogue']:
+            self.dialog_list.append(WasteImage(self, obj))
 
         # ======== new dimensions of pictures =========#
-        self.WasteImage1.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteImage2.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteImage3.new_size(self.width / 1.5, self.height / 1.5)
 
-        self.WasteDiag1.new_pos((self.width / 5.5), 10)
-        self.WasteDiag1.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag2.new_pos((self.width / 5.5), 10)
-        self.WasteDiag2.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag3.new_pos((self.width / 5.5), 10)
-        self.WasteDiag3.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag4.new_pos((self.width / 5.5), 10)
-        self.WasteDiag4.new_size(self.width / 1.5, self.height / 1.5)
-        self.WasteDiag5.new_pos((self.width / 5.5), 10)
-        self.WasteDiag5.new_size(self.width / 1.5, self.height / 1.5)
-
+        for obj in self.images_list:
+            obj.new_size(self.width / 1.5, self.height / 1.5)
+        
+        for obj in self.dialog_list:
+            obj.new_pos(self.width / 5.5, 10)
+            obj.new_size(self.width/ 1.5, self.height / 1.5)
         # define QPropertyAnimation Objects
 
         # image animations
-        self.waste_anim1 = QPropertyAnimation(self.WasteImage1, b"pos")
-        self.waste_anim2 = QPropertyAnimation(self.WasteImage2, b"pos")
-        self.waste_anim3 = QPropertyAnimation(self.WasteImage3, b"pos")
-
+        for obj in self.images_list:
+            self.img_anim.append(QPropertyAnimation(obj, b"pos"))
+      
         # dialog animations
-        self.waste_anim4 = QPropertyAnimation(self.WasteDiag1, b"pos")
-        self.waste_anim5 = QPropertyAnimation(self.WasteDiag2, b"pos")
-        self.waste_anim6 = QPropertyAnimation(self.WasteDiag3, b"pos")
-        self.waste_anim7 = QPropertyAnimation(self.WasteDiag4, b"pos")
-        self.waste_anim8 = QPropertyAnimation(self.WasteDiag5, b"pos")
+        for obj in self.dialog_list:
+            self.dialog_anim.append(QPropertyAnimation(obj, b"pos"))
 
         # hide the animations initially
         self.hide_all()
 
         # defining the animations
-        self.waste_anim1.setDuration(2000)  # 2 seconds
-        self.waste_anim1.setStartValue(QPointF(10, self.height / 4))
-        self.waste_anim1.setEndValue(QPointF((self.width / 3.5), self.height / 4))
+        for obj in self.img_anim:
+            obj.setDuration(2000)
+            obj.setStartValue(QPointF(10,self.height / 4))
+            obj.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
-        self.waste_anim2.setDuration(2000)  # 2 seconds
-        self.waste_anim2.setStartValue(QPointF(10, self.height / 4))
-        self.waste_anim2.setEndValue(QPointF((self.width / 3.5), self.height / 4))
-
-        self.waste_anim3.setDuration(2000)  # 2 seconds
-        self.waste_anim3.setStartValue(QPointF(10, self.height / 4))
-        self.waste_anim3.setEndValue(QPointF((self.width / 3.5), self.height / 4))
-
-        self.waste_anim4.setDuration(1000)  # 2 seconds
-        self.waste_anim4.setStartValue(QPointF((self.width / 5.5), 10))
-        self.waste_anim4.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-        self.waste_anim5.setDuration(1000)  # 2 seconds
-        self.waste_anim5.setStartValue(QPointF((self.width / 5.5), 10))
-        self.waste_anim5.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-        self.waste_anim6.setDuration(1000)  # 2 seconds
-        self.waste_anim6.setStartValue(QPointF((self.width / 5.5), 10))
-        self.waste_anim6.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-        self.waste_anim7.setDuration(1000)  # 2 seconds
-        self.waste_anim7.setStartValue(QPointF((self.width / 5.5), 10))
-        self.waste_anim7.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-        self.waste_anim8.setDuration(1000)  # 2 seconds
-        self.waste_anim8.setStartValue(QPointF((self.width / 5.5), 10))
-        self.waste_anim8.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-        # ======All Lists defined here======
-        self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
-        self.diaglog_list = [self.WasteDiag1]
-        self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
+        for obj in self.dialog_anim:
+            obj.setDuration(2000)
+            obj.setStartValue(QPointF((self.width / 5.5), 10))
+            obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         # =====Displaying the Background Frame Image===========
         background = QLabel(self)
-        back_pixmap = QPixmap('images/compost/compost_background.png')  # image.jpg (5038,9135)
+        back_pixmap = QPixmap(data[r_id]['background'][0])  # image.jpg (5038,9135)
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
