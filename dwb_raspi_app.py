@@ -18,6 +18,7 @@ GPIO.setup(4,GPIO.IN)
 # GPIO.setup(27,GPIO.IN)
 # GPIO.setup(22,GPIO.IN)
 
+r_id = 'compost'
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -174,36 +175,26 @@ class App(QWidget):
 
     def change_image(self):
         self.hide_all()
-        img_obj = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
-        ani_obj = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
         self.imageIndex += 1
-        if self.imageIndex > 2:
+        if self.imageIndex >= self.images_size:
             self.imageIndex = 0
         x = self.imageIndex
-        img_obj[x].show()
-        ani_obj[x].start()
+        self.images_list[x].show()
+        self.img_anim[x].start()
 
     def hide_all(self):
-        self.WasteImage1.hide()
-        self.WasteImage2.hide()
-        self.WasteImage3.hide()
-        self.WasteDiag1.hide()
-        self.WasteDiag2.hide()
-        self.WasteDiag3.hide()
-        self.WasteDiag4.hide()
-        self.WasteDiag5.hide()
+        for obj in self.images_list:
+            obj.hide()
+        for obj in self.dialog_list:
+            obj.hide()
 
 
     def printHello(self):
-        img_obj = [self.WasteDiag1, self.WasteDiag2, self.WasteDiag3, self.WasteDiag4, self.WasteDiag5]
-        diag_obj = [self.waste_anim4, self.waste_anim5, self.waste_anim6, self.waste_anim7, self.waste_anim8]
-
-        n = randint(0,4)
-
+        n = randint(0, self.dial_size - 1)
         self.hide_all()
         self.timer.stop()
-        img_obj[n].show()  #self.WasteDiag1.show()
-        diag_obj[n].start() #self.waste_anim4.start()
+        self.dialog_list[n].show()      # start the animation of the selected dialogue
+        self.dialog_anim[n].start()    
         self.timer.start(5000)
 
 
