@@ -18,7 +18,7 @@ GPIO.setup(4,GPIO.IN)
 # GPIO.setup(27,GPIO.IN)
 # GPIO.setup(22,GPIO.IN)
 
-r_id = 'compost'
+r_id = 'recycling'
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
