@@ -109,7 +109,7 @@ class App(QWidget):
         self.dialog_anim = []
 
         # ======= reading json files ===========
-        with open('/home/pi/DWB/DigitalWasteBins2019/images.json') as json_file:
+        with open('images.json') as json_file:
             data = json.load(json_file)
         self.images_size = len(data[r_id]['images'])
         self.dial_size = len(data[r_id]['dialogue'])
