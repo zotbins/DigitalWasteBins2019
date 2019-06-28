@@ -109,14 +109,14 @@ class App(QWidget):
         self.dialog_anim = []
 
         # ======= reading json files ===========
-        with open('images.json') as json_file:
+        with open('~/DWB/DigitalWasteBins2019/images.json') as json_file:
             data = json.load(json_file)
         self.images_size = len(data[r_id]['images'])
         self.dial_size = len(data[r_id]['dialogue'])
         # =======creating the Image Lables=======
         for obj in data[r_id]['images']:
             self.images_list.append(WasteImage(self, obj))
-        
+
         for obj in data[r_id]['dialogue']:
             self.dialog_list.append(WasteImage(self, obj))
 
@@ -124,7 +124,7 @@ class App(QWidget):
 
         for obj in self.images_list:
             obj.new_size(self.width / 1.5, self.height / 1.5)
-        
+
         for obj in self.dialog_list:
             obj.new_pos(self.width / 5.5, 10)
             obj.new_size(self.width/ 1.5, self.height / 1.5)
@@ -133,7 +133,7 @@ class App(QWidget):
         # image animations
         for obj in self.images_list:
             self.img_anim.append(QPropertyAnimation(obj, b"pos"))
-      
+
         # dialog animations
         for obj in self.dialog_list:
             self.dialog_anim.append(QPropertyAnimation(obj, b"pos"))
@@ -194,7 +194,7 @@ class App(QWidget):
         self.hide_all()
         self.timer.stop()
         self.dialog_list[n].show()      # start the animation of the selected dialogue
-        self.dialog_anim[n].start()    
+        self.dialog_anim[n].start()
         self.timer.start(5000)
 
 
