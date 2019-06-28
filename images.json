@@ -3,62 +3,62 @@
     {
         "images":
         [
-            "~/DWB/DigitialWasteBins2019/images/compost/c1.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/c2.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/c3.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/c1.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/c2.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/c3.png"
         ],
         "dialogue":
         [
-            "~/DWB/DigitialWasteBins2019/images/compost/ant_dialog.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/ant_dialog1.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/ant_dialog2.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/ant_dialog3.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/ant_dialog4.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/ant_dialog.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/ant_dialog1.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/ant_dialog2.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/ant_dialog3.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/ant_dialog4.png"
         ],
         "background":
         [
-            "~/DWB/DigitialWasteBins2019/images/compost/compost_background.png",
-            "~/DWB/DigitialWasteBins2019/images/compost/compost_background.svg"
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/compost_background.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/compost/compost_background.svg"
         ]
     },
     "recycling":
     {
         "images":
         [
-            "~/DWB/DigitialWasteBins2019/images/recycle/r1.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/r2.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/r1.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/r2.png"
         ],
         "dialogue":
         [
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog1.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog2.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog3.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog4.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/rant_dialog5.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog1.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog2.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog3.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog4.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/rant_dialog5.png"
         ],
         "background":
         [
-            "~/DWB/DigitialWasteBins2019/images/recycle/recycle_background.png",
-            "~/DWB/DigitialWasteBins2019/images/recycle/recycle_background.svg"
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/recycle_background.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/recycle/recycle_background.svg"
         ]
     },
     "landfill":
     {
         "images":
         [
-            "~/DWB/DigitialWasteBins2019/images/landfill/l1.png",
-            "~/DWB/DigitialWasteBins2019/images/landfill/l2.png",
-            "~/DWB/DigitialWasteBins2019/images/landfill/l3.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/l1.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/l2.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/l3.png"
         ],
         "dialogue":
         [
-            "~/DWB/DigitialWasteBins2019/images/landfill/lant_dialog1.png"
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/lant_dialog1.png"
         ],
         "background":
         [
-            "~/DWB/DigitialWasteBins2019/images/landfill/landfill_background.png",
-            "~/DWB/DigitialWasteBins2019/images/landfill/landfill_background.svg"
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/landfill_background.png",
+            "/home/pi/DWB/DigitialWasteBins2019/images/landfill/landfill_background.svg"
         ]
     }
   }
