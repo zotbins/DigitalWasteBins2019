@@ -9,12 +9,12 @@ GPIO.setup(27,GPIO.IN)
 
 
 while True:
-    sensor_state = GPIO.input(4)*GPIO.input(17)*GPIO.input(27)
-    print([GPIO.input(4),GPIO.input(17), GPIO.input(27)])
+    sensor_state = GPIO.input(4)
+    print(GPIO.input(4))
     if (sensor_state==0):
         while(sensor_state==0):
-            sensor_state = GPIO.input(4)*GPIO.input(17)*GPIO.input(27)
-            print([GPIO.input(4),GPIO.input(17), GPIO.input(27)])
+            sensor_state = GPIO.input(4)
+            print(GPIO.input(4))
             print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
             time.sleep(1)
     time.sleep(1)
