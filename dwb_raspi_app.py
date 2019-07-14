@@ -14,7 +14,6 @@ import RPi.GPIO as GPIO
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
-r_id_dict = ["1":"landfill","2":"compost","3":"recycling"]
 
 r_id = None
 
@@ -70,10 +69,6 @@ class App(QWidget):
     def __init__(self):
         super().__init__()  # inhreitance from QWidget
         self.title = 'PyQT Window'
-
-        # determines type of animations (compost, reycle, or landfill)
-        with open('binType.txt','r') as f:
-            r_id = r_id_dict(f.read().strip())
 
         # determines screen size
         screenSize = QtWidgets.QDesktopWidget().screenGeometry(-1)  # -1 = main monitor, 1 = secondary monitor
@@ -203,6 +198,10 @@ class App(QWidget):
 
 
 if __name__ == "__main__":
+    # determines type of animations (compost, reycle, or landfill)
+    with open('binType.txt','r') as f:
+        r_id = f.read().strip()
+        
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
