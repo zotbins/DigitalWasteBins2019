@@ -14,11 +14,9 @@ import RPi.GPIO as GPIO
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
-# GPIO.setup(17,GPIO.IN)
-# GPIO.setup(27,GPIO.IN)
-# GPIO.setup(22,GPIO.IN)
+r_id_dict = ["1":"landfill","2":"compost","3":"recycling"]
 
-r_id = 'compost'
+r_id = None
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -73,7 +71,13 @@ class App(QWidget):
         super().__init__()  # inhreitance from QWidget
         self.title = 'PyQT Window'
 
+        # determines type of animations (compost, reycle, or landfill)
+        with open('binType.txt','r') as f:
+            r_id = r_id_dict(f.read().strip())
+
+        # determines screen size
         screenSize = QtWidgets.QDesktopWidget().screenGeometry(-1)  # -1 = main monitor, 1 = secondary monitor
+
         # determines where the window will be created
         self.left = 50
         self.top = 50
