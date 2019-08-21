@@ -10,6 +10,7 @@ import time
 import time
 import datetime
 import RPi.GPIO as GPIO
+import subprocess
 
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
@@ -61,6 +62,7 @@ class BreakBeamThread(QThread):
         self.wait()
 
 
+
 class App(QWidget):
     stop_signal = pyqtSignal()
     wait_signal = False  # boolean to be used to wait between animations
@@ -90,6 +92,9 @@ class App(QWidget):
 
         # initialized the window
         self.initUI()
+	
+	#hides the cursor
+        self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -98,8 +103,7 @@ class App(QWidget):
         # =============Threads================
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
-        self.BreakThread.my_signal.connect(self.printHello)
-        # self.statusBar().showMessage('Message in statusbar.')
+        self.BreakThread.my_signal.connect(self.call_dialog)
 
          # ======= all list defined here ========
         self.images_list = []
@@ -107,18 +111,19 @@ class App(QWidget):
         self.img_anim = []
         self.dialog_anim = []
 
-        # ======= reading json files ===========
-        with open('images.json') as json_file:
-            data = json.load(json_file)
-        self.images_size = len(data[r_id]['images'])
-        self.dial_size = len(data[r_id]['dialogue'])
-        # =======creating the Image Lables=======
-        for obj in data[r_id]['images']:
-            self.images_list.append(WasteImage(self, obj))
-
-        for obj in data[r_id]['dialogue']:
-            self.dialog_list.append(WasteImage(self, obj))
-
+      
+        # =======creating the Image Lables=======	
+        foldername = "images/" + r_id + "/image_ani/"
+        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
+        self.images_list = t.stdout.decode('utf-8').strip().split('\n')
+        self.images_list = [WasteImage(self,obj) for obj in self.images_list] #now a list of image WasteImages
+        self.images_size = len(self.images_list)
+        
+        foldername = "images/" + r_id + "/dialog_ani/"
+        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
+        self.dialog_list = t.stdout.decode('utf-8').strip().split('\n')
+        self.dialog_list = [WasteImage(self,obj) for obj in self.dialog_list]
+        self.dial_size = len(self.dialog_list)
         # ======== new dimensions of pictures =========#
 
         for obj in self.images_list:
@@ -153,15 +158,9 @@ class App(QWidget):
 
         # =====Displaying the Background Frame Image===========
         background = QLabel(self)
-        back_pixmap = QPixmap(data[r_id]['background'][0])  # image.jpg (5038,9135)
+        back_pixmap = QPixmap("images/" + r_id + "/background.png")  # image.jpg (5038,9135)
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
-
-        # =====Starting the animation========
-        # self.WasteImage1.show()
-        # self.waste_anim1.start()
-        # print(self.waste_anim1.state())
-        # print(self.waste_anim1.totalDuration())
 
         # ============QTimer============
         self.timer = QTimer(self)
@@ -188,7 +187,7 @@ class App(QWidget):
             obj.hide()
 
 
-    def printHello(self):
+    def call_dialog(self):
         n = randint(0, self.dial_size - 1)
         self.hide_all()
         self.timer.stop()
