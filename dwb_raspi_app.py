@@ -55,7 +55,7 @@ class BreakBeamThread(QThread):
                 while(sensor_state==0):
                     sensor_state = GPIO.input(4)
                 self.my_signal.emit()
-                time.sleep(60)
+                time.sleep(5)
                 #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
 
     def __del__(self):
@@ -132,8 +132,8 @@ class App(QWidget):
         for obj in self.dialog_list:
             obj.new_pos(self.width / 5.5, 10)
             obj.new_size(self.width/ 1.5, self.height / 1.5)
+            
         # define QPropertyAnimation Objects
-
         # image animations
         for obj in self.images_list:
             self.img_anim.append(QPropertyAnimation(obj, b"pos"))
@@ -152,7 +152,7 @@ class App(QWidget):
             obj.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
         for obj in self.dialog_anim:
-            obj.setDuration(2000)
+            obj.setDuration(5000)
             obj.setStartValue(QPointF((self.width / 5.5), 10))
             obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
