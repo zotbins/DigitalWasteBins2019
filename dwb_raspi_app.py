@@ -7,13 +7,14 @@ from random import randint
 
 import json
 import time
+import time
 import datetime
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import subprocess
 
 #GLOBAL VARIABLES
-#GPIO.setmode(GPIO.BCM)
-#GPIO.setup(4,GPIO.IN)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(4,GPIO.IN)
 
 r_id = None
 
@@ -48,49 +49,19 @@ class BreakBeamThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-        i = 0
         while True:
-            if (i % 11 == 0 and i > 0):
+            sensor_state = GPIO.input(4)
+            if (sensor_state==0):
+                while(sensor_state==0):
+                    sensor_state = GPIO.input(4)
                 self.my_signal.emit()
-            i = randint(1, 100)
-            print(i)
-            time.sleep(2)
-
-        # while True:
-        #     sensor_state = GPIO.input(4)
-        #     if (sensor_state==0):
-        #         while(sensor_state==0):
-        #             sensor_state = GPIO.input(4)
-        #         self.my_signal.emit()
-        #         time.sleep(5)
-        #         #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+                time.sleep(5)
+                #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
 
     def __del__(self):
         self.wait()
 
-class BlackOutThread(QThread):
-    my_signal = pyqtSignal()
 
-    def __init__(self,starthour=0,endhour=8):
-        """
-        The starthour and the endhour variables represent the time range
-        of when the blackout screen should be activated
-        """
-        QThread.__init__(self)
-        self.starthour = starthour
-        self.endhour = endhour
-    def run(self):
-        while True:
-            #check if time is between 12AM and 8AM
-            currentDatetime = datetime.datetime.now()
-            currentHour  = int(currentDatetime.strftime('%H'))
-
-            if (currentHour >= self.starthour and currentHour < self.endhour):
-                self.my_signal.emit()
-            time.sleep(300)
-
-    def __del__(self):
-        self.wait()
 
 class App(QWidget):
     stop_signal = pyqtSignal()
@@ -111,8 +82,6 @@ class App(QWidget):
         # determines the size of the window
         self.width = screenSize.width()
         self.height = screenSize.height()
-
-        # this determines what image should be displayed for the main animation loop
         self.imageIndex = 0
 
         # determines background color of the window
@@ -124,7 +93,7 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-        #hides the cursor
+	#hides the cursor
         self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
@@ -136,23 +105,14 @@ class App(QWidget):
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
 
-        self.BlackThread = BlackOutThread()
-        self.BlackThread.start()
-        self.BlackThread.my_signal.connect(self.show_black)
-
          # ======= all list defined here ========
         self.images_list = []
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
 
-        # ========== black screen saver Image Label Object=======
-        self.black_screen = QLabel(self)
-        self.black_screen_pixmap = QPixmap("images/black_screen.png")  # image.jpg (5038,9135)
-        self.black_screen_pixmap = self.black_screen_pixmap.scaled(self.width, self.height)
-        #black_screen.setPixmap(black_screen_pixmap)
 
-        # =======creating the Image Labels Objects=======
+        # =======creating the Image Lables=======
         foldername = "images/" + r_id + "/image_ani/"
         t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
         self.images_list = t.stdout.decode('utf-8').strip().split('\n')
@@ -164,8 +124,8 @@ class App(QWidget):
         self.dialog_list = t.stdout.decode('utf-8').strip().split('\n')
         self.dialog_list = [WasteImage(self,obj) for obj in self.dialog_list]
         self.dial_size = len(self.dialog_list)
-
         # ======== new dimensions of pictures =========#
+
         for obj in self.images_list:
             obj.new_size(self.width / 1.5, self.height / 1.5)
 
@@ -202,7 +162,7 @@ class App(QWidget):
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
-        # ============QTimer for animations============
+        # ============QTimer============
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.change_image)
         self.timer.start(5000)
@@ -211,17 +171,7 @@ class App(QWidget):
         self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         #self.show()  # uncomment if you don't want fullscreen.
 
-    def show_black(self):
-        """
-        This function shows a black screen
-        """
-        print("\n\n\nBLACKOUT!\n\n\n")
-
     def change_image(self):
-        """
-        This function changes the images of the waste and animates them
-        in a loop.
-        """
         self.hide_all()
         self.imageIndex += 1
         if self.imageIndex >= self.images_size:
@@ -231,13 +181,11 @@ class App(QWidget):
         self.img_anim[x].start()
 
     def hide_all(self):
-        """
-        This hides all the image objects.
-        """
         for obj in self.images_list:
             obj.hide()
         for obj in self.dialog_list:
             obj.hide()
+
 
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
