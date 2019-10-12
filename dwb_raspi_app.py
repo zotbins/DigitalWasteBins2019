@@ -153,7 +153,7 @@ class App(QWidget):
 
         for obj in self.dialog_anim:
             obj.setDuration(3500)
-            obj.setStartValue(QPointF((self.width / 5.5), self.height * 1.5))
+            obj.setStartValue(QPointF((self.width / 5.5), self.height * 1.25))
             obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         # =====Displaying the Background Frame Image===========
