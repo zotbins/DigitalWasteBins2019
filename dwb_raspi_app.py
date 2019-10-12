@@ -153,7 +153,7 @@ class App(QWidget):
 
         for obj in self.dialog_anim:
             obj.setDuration(3500)
-            obj.setStartValue(QPointF((self.width / 5.5), self.height * 1.25))
+            obj.setStartValue(QPointF((self.width / 5.5), self.height))
             obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
         # =====Displaying the Background Frame Image===========
@@ -193,7 +193,7 @@ class App(QWidget):
         self.timer.stop()
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
-        self.timer.start(10000)
+        self.timer.start(5000)
 
 
 if __name__ == "__main__":
