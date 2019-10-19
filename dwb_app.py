@@ -1,4 +1,5 @@
 """
+Authors: Owen Yang, Tristan Samonte, Anthony Esmeralda, TingTing Tsai
 Dependencies:
 sudo apt-get install qt5-default
 sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
@@ -133,7 +134,7 @@ class App(QWidget):
         # =======creating the Image Lables=======
         for obj in data[r_id]['images']:
             self.images_list.append(WasteImage(self, obj))
-        
+
         for obj in data[r_id]['dialogue']:
             self.dialog_list.append(WasteImage(self, obj))
 
@@ -141,7 +142,7 @@ class App(QWidget):
 
         for obj in self.images_list:
             obj.new_size(self.width / 1.5, self.height / 1.5)
-        
+
         for obj in self.dialog_list:
             obj.new_pos(self.width / 5.5, 10)
             obj.new_size(self.width/ 1.5, self.height / 1.5)
@@ -150,7 +151,7 @@ class App(QWidget):
         # image animations
         for obj in self.images_list:
             self.img_anim.append(QPropertyAnimation(obj, b"pos"))
-      
+
         # dialog animations
         for obj in self.dialog_list:
             self.dialog_anim.append(QPropertyAnimation(obj, b"pos"))
