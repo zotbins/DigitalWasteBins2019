@@ -12,6 +12,8 @@ import datetime
 import RPi.GPIO as GPIO
 import subprocess
 
+import sqlite3
+
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
@@ -45,22 +47,41 @@ class WasteImage(QLabel):
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self,simulate=False):
         QThread.__init__(self)
 
     def run(self):
+        i = 0
         while True:
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
                 while(sensor_state==0):
                     sensor_state = GPIO.input(4)
                 self.my_signal.emit()
+                self.add_data_to_local()
                 time.sleep(5)
+
                 #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+    def add_data_to_local(self):
+        """
+        This function adds timestamp, weight, and distance data
+        to the SQLite data base located in "/home/pi/ZBinData/zotbin.db"
+        timestamp<str>: in the format '%Y-%m-%d %H:%M:%S'
+        weight<float>: float that represents weight in grams
+        distance<float>: float that represents distance in cm
+        """
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        conn = sqlite3.connect("/home/pi/ZBinData/zotbin.db")
+        conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
+        "TIMESTAMP" TEXT NOT NULL
+        );
+        ''')
+        conn.execute("INSERT INTO BREAKBEAM (TIMESTAMP)\nVALUES ('{}')".format(timestamp))
+        conn.commit()
+        conn.close()
 
     def __del__(self):
         self.wait()
-
 
 
 class App(QWidget):
@@ -185,7 +206,6 @@ class App(QWidget):
             obj.hide()
         for obj in self.dialog_list:
             obj.hide()
-
 
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
