@@ -193,7 +193,7 @@ class App(QWidget):
         self.timer.stop()
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
-        self.timer.start(5000)
+        self.timer.start(20000)
 
 
 if __name__ == "__main__":
