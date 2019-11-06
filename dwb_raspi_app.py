@@ -9,16 +9,16 @@ import json
 import time
 import time
 import datetime
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import subprocess
 
 import sqlite3
 
-import logging
-
 #GLOBAL VARIABLES
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(4,GPIO.IN)
+GPIO_BREAK = 4
+SIMULATE_BREAK = False
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setup(4,GPIO.IN)
 
 r_id = None
 
@@ -49,13 +49,16 @@ class WasteImage(QLabel):
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
 
-    def __init__(self,simulate=False):
+    def __init__(self):
         QThread.__init__(self)
-        self.simulate = simulate
+        if SIMULATE_BREAK:
+            self.db_path = "../ZBinData/zotbin.db"
+        else:
+            self.db_path = "/home/pi/ZBinData/zotbin.db"
 
     def run(self):
         while True:
-            if not simulate:
+            if not SIMULATE_BREAK:
                 sensor_state = GPIO.input(4)
                 if (sensor_state==0):
                     while(sensor_state==0):
@@ -67,12 +70,11 @@ class BreakBeamThread(QThread):
                 i = randint(1, 100)
                 if (i % 11 == 0 and i > 0):
                     print("[BreakBeamThread] break beam triggered: ", i)
+                    print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
                     self.my_signal.emit()
                     self.add_data_to_local()
-                    time.sleep(5)
+                time.sleep(5)
 
-
-                #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
     def add_data_to_local(self):
         """
         This function adds timestamp, weight, and distance data
@@ -82,7 +84,7 @@ class BreakBeamThread(QThread):
         distance<float>: float that represents distance in cm
         """
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        conn = sqlite3.connect("/home/pi/ZBinData/zotbin.db")
+        conn = sqlite3.connect(self.db_path)
         conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
         "TIMESTAMP" TEXT NOT NULL
         );
@@ -128,12 +130,13 @@ class App(QWidget):
 	#hides the cursor
         self.setCursor(Qt.BlankCursor)
 
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         # =============Threads================
-        self.BreakThread = BreakBeamThread()
+        self.BreakThread = BreakBeamThread(True)
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
 
@@ -226,12 +229,18 @@ class App(QWidget):
         self.dialog_anim[n].start()
         self.timer.start(5000)
 
+    def init_raspi():
+        #raspi general setup
+        if not SIMULATE_BREAK:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(GPIO_BREAK, GPIO.IN)
 
 if __name__ == "__main__":
+    print("PROGRAM RUNNING")
     # determines type of animations (compost, reycle, or landfill)
     with open('binType.txt','r') as f:
         r_id = f.read().strip()
-
+    r_id = "compost"
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
