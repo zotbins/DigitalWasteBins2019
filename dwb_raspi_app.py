@@ -10,13 +10,14 @@ import time
 import time
 import datetime
 #import RPi.GPIO as GPIO
+import RPi_DUMMY.GPIO as GPIO
 import subprocess
 
 import sqlite3
 
 #GLOBAL VARIABLES
 GPIO_BREAK = 4
-SIMULATE_BREAK = False
+SIMULATE_BREAK = True
 # GPIO.setmode(GPIO.BCM)
 # GPIO.setup(4,GPIO.IN)
 
@@ -70,10 +71,10 @@ class BreakBeamThread(QThread):
                 i = randint(1, 100)
                 if (i % 11 == 0 and i > 0):
                     print("[BreakBeamThread] break beam triggered: ", i)
-                    print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+                    print("[BreakBeamThread]: ", datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
                     self.my_signal.emit()
                     self.add_data_to_local()
-                time.sleep(5)
+                time.sleep(3)
 
     def add_data_to_local(self):
         """
@@ -136,7 +137,7 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         # =============Threads================
-        self.BreakThread = BreakBeamThread(True)
+        self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
 
@@ -235,12 +236,15 @@ class App(QWidget):
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(GPIO_BREAK, GPIO.IN)
 
+
 if __name__ == "__main__":
     print("PROGRAM RUNNING")
     # determines type of animations (compost, reycle, or landfill)
-    with open('binType.txt','r') as f:
-        r_id = f.read().strip()
-    r_id = "compost"
+    if not SIMULATE_BREAK:
+        with open('binType.txt','r') as f:
+            r_id = f.read().strip()
+    else:
+        r_id = "compost"
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
