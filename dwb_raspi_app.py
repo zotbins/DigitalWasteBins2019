@@ -14,6 +14,8 @@ import subprocess
 
 import sqlite3
 
+import logging
+
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
@@ -49,17 +51,26 @@ class BreakBeamThread(QThread):
 
     def __init__(self,simulate=False):
         QThread.__init__(self)
+        self.simulate = simulate
 
     def run(self):
-        i = 0
         while True:
-            sensor_state = GPIO.input(4)
-            if (sensor_state==0):
-                while(sensor_state==0):
-                    sensor_state = GPIO.input(4)
-                self.my_signal.emit()
-                self.add_data_to_local()
-                time.sleep(5)
+            if not simulate:
+                sensor_state = GPIO.input(4)
+                if (sensor_state==0):
+                    while(sensor_state==0):
+                        sensor_state = GPIO.input(4)
+                    self.my_signal.emit()
+                    self.add_data_to_local()
+                    time.sleep(5)
+            else:
+                i = randint(1, 100)
+                if (i % 11 == 0 and i > 0):
+                    print("[BreakBeamThread] break beam triggered: ", i)
+                    self.my_signal.emit()
+                    self.add_data_to_local()
+                    time.sleep(5)
+
 
                 #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
     def add_data_to_local(self):
