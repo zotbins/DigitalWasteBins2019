@@ -238,7 +238,6 @@ class App(QWidget):
 
 
 if __name__ == "__main__":
-    print("PROGRAM RUNNING")
     # determines type of animations (compost, reycle, or landfill)
     if not SIMULATE_BREAK:
         with open('binType.txt','r') as f:
