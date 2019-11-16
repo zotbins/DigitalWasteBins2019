@@ -1,22 +1,22 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
+from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
 
-import json
 import time
-import time
-import datetime
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import subprocess
 
-#GLOBAL VARIABLES
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(4,GPIO.IN)
+import ImagePlayer
+
+# GLOBAL VARIABLES
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setup(4,GPIO.IN)
 
 r_id = None
+
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -49,18 +49,23 @@ class BreakBeamThread(QThread):
         QThread.__init__(self)
 
     def run(self):
+        # while True:
+        #     sensor_state = GPIO.input(4)
+        #     if (sensor_state==0):
+        #         while(sensor_state==0):
+        #             sensor_state = GPIO.input(4)
+        #         self.my_signal.emit()
+        #         time.sleep(5)
+        #         #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+        i = 1
         while True:
-            sensor_state = GPIO.input(4)
-            if (sensor_state==0):
-                while(sensor_state==0):
-                    sensor_state = GPIO.input(4)
+            if i % 10 == 0:
                 self.my_signal.emit()
-                time.sleep(5)
-                #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+            i += 1
+            time.sleep(5)
 
     def __del__(self):
         self.wait()
-
 
 
 class App(QWidget):
@@ -93,7 +98,7 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-	#hides the cursor
+    # hides the cursor
         self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
@@ -103,7 +108,14 @@ class App(QWidget):
         # =============Threads================
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
-        self.BreakThread.my_signal.connect(self.call_dialog)
+        self.BreakThread.my_signal.connect(self.call_gif) # used to be call_dialog
+
+        # ============Defining a GIF===========
+        self.gif = ImagePlayer.ImagePlayer("Thickey.gif", "test", self)
+        self.gif_anim = QPropertyAnimation(self.gif, b"pos")
+        self.gif_anim.setDuration(2000)
+        self.gif_anim.setStartValue(QPointF((self.width / 3.5), self.height / 2))
+        self.gif_anim.setEndValue(QPointF((self.width / 3.5), self.height / 2))
 
          # ======= all list defined here ========
         self.images_list = []
@@ -162,14 +174,18 @@ class App(QWidget):
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
-        # ============QTimer============
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.change_image)
-        self.timer.start(5000)
+        # ============QTimer for Dialogue Images============
+        self.dialogueTimer = QTimer(self)
+        self.dialogueTimer.timeout.connect(self.change_image)
+        self.dialogueTimer.start(5000)
+
+        # ============QTimer for GIF============
+        self.gifTimer = QTimer(self)
+        self.gifTimer.timeout.connect(self.call_dialog)
 
         # ====Showing Widget======
-        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        #self.show()  # uncomment if you don't want fullscreen.
+        self.showFullScreen()  # uncomment this later. We do want fullscreen, but after we have a working image
+        # self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -185,23 +201,36 @@ class App(QWidget):
             obj.hide()
         for obj in self.dialog_list:
             obj.hide()
+        self.gif.hide()
 
+    def call_gif(self):
+        self.hide_all()
+        self.dialogueTimer.stop()  # calling so image doesn't randomly appear after gif disappears
+        self.gifTimer.stop()
+        self.gif.jumpToFrame(0)
+        self.gif.show()
+        self.gif_anim.start()
+        self.gifTimer.start(5000)
 
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
         self.hide_all()
-        self.timer.stop()
+
+        self.gifTimer.stop() # added so call_dialog is not called repeatedly
+
+        self.dialogueTimer.stop()
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
-        self.timer.start(20000)
+        self.dialogueTimer.start(5000)
+        # Note: making the time larger means waste image will stay longer afterwards
 
 
 if __name__ == "__main__":
-    # determines type of animations (compost, reycle, or landfill)
-    with open('binType.txt','r') as f:
+    # determines type of animations (compost, recycle, or landfill)
+    with open('binType.txt', 'r') as f:
         r_id = f.read().strip()
 
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
-    sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
+    sys.exit(app.exec_())  # 'exec_' because 'exec' is already a keyword
