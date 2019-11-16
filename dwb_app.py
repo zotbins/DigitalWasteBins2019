@@ -30,14 +30,13 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
-import json
-import random
 
 import time
 import datetime
+import subprocess
 
-
-r_id = 'recycle'
+#GLOBAL VARIABLES
+r_id = None
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -62,7 +61,6 @@ class WasteImage(QLabel):
 
     pos = pyqtProperty(QPointF, fset=_set_pos)
 
-
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
 
@@ -81,7 +79,6 @@ class BreakBeamThread(QThread):
     def __del__(self):
         self.wait()
 
-
 class App(QWidget):
     stop_signal = pyqtSignal()
     wait_signal = False  # boolean to be used to wait between animations
@@ -91,7 +88,9 @@ class App(QWidget):
         super().__init__()  # inhreitance from QWidget
         self.title = 'PyQT Window'
 
+        # determines screen size
         screenSize = QtWidgets.QDesktopWidget().screenGeometry(-1)  # -1 = main monitor, 1 = secondary monitor
+
         # determines where the window will be created
         self.left = 50
         self.top = 50
@@ -110,6 +109,9 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
+	#hides the cursor
+        self.setCursor(Qt.BlankCursor)
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -117,27 +119,27 @@ class App(QWidget):
         # =============Threads================
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
-        self.BreakThread.my_signal.connect(self.printHello)
-        # self.statusBar().showMessage('Message in statusbar.')
+        self.BreakThread.my_signal.connect(self.call_dialog)
 
-        # ======= all list defined here ========
+         # ======= all list defined here ========
         self.images_list = []
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
 
-        # ======= reading json files ===========
-        with open('images.json') as json_file:
-            data = json.load(json_file)
-        self.images_size = len(data[r_id]['images'])
-        self.dial_size = len(data[r_id]['dialogue'])
+
         # =======creating the Image Lables=======
-        for obj in data[r_id]['images']:
-            self.images_list.append(WasteImage(self, obj))
+        foldername = "images/" + r_id + "/image_ani/"
+        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
+        self.images_list = t.stdout.decode('utf-8').strip().split('\n')
+        self.images_list = [WasteImage(self,obj) for obj in self.images_list] #now a list of image WasteImages
+        self.images_size = len(self.images_list)
 
-        for obj in data[r_id]['dialogue']:
-            self.dialog_list.append(WasteImage(self, obj))
-
+        foldername = "images/" + r_id + "/dialog_ani/"
+        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
+        self.dialog_list = t.stdout.decode('utf-8').strip().split('\n')
+        self.dialog_list = [WasteImage(self,obj) for obj in self.dialog_list]
+        self.dial_size = len(self.dialog_list)
         # ======== new dimensions of pictures =========#
 
         for obj in self.images_list:
@@ -146,8 +148,8 @@ class App(QWidget):
         for obj in self.dialog_list:
             obj.new_pos(self.width / 5.5, 10)
             obj.new_size(self.width/ 1.5, self.height / 1.5)
-        # define QPropertyAnimation Objects
 
+        # define QPropertyAnimation Objects
         # image animations
         for obj in self.images_list:
             self.img_anim.append(QPropertyAnimation(obj, b"pos"))
@@ -166,27 +168,15 @@ class App(QWidget):
             obj.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
         for obj in self.dialog_anim:
-            obj.setDuration(2000)
-            obj.setStartValue(QPointF((self.width / 5.5), 10))
+            obj.setDuration(3500)
+            obj.setStartValue(QPointF((self.width / 5.5), self.height))
             obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
-
-
-        # ======All Lists defined here======
-        #self.images_list = [self.WasteImage1, self.WasteImage2, self.WasteImage3]
-        #self.diaglog_list = [self.WasteDiag1]
-        #self.waste_anim_list = [self.waste_anim1, self.waste_anim2, self.waste_anim3]
 
         # =====Displaying the Background Frame Image===========
         background = QLabel(self)
-        back_pixmap = QPixmap(data[r_id]['background'][0])  # image.jpg (5038,9135)
+        back_pixmap = QPixmap("images/" + r_id + "/background.png")  # image.jpg (5038,9135)
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
-
-        # =====Starting the animation========
-        # self.WasteImage1.show()
-        # self.waste_anim1.start()
-        # print(self.waste_anim1.state())
-        # print(self.waste_anim1.totalDuration())
 
         # ============QTimer============
         self.timer = QTimer(self)
@@ -213,19 +203,20 @@ class App(QWidget):
             obj.hide()
 
 
-
-    def printHello(self):
-
+    def call_dialog(self):
         n = randint(0, self.dial_size - 1)
-
         self.hide_all()
         self.timer.stop()
-        self.dialog_list[n].show()      #self.WasteDiag1.show()
-        self.dialog_anim[n].start()    #self.waste_anim4.start()
-        self.timer.start(5000)
+        self.dialog_list[n].show()      # start the animation of the selected dialogue
+        self.dialog_anim[n].start()
+        self.timer.start(20000)
 
 
 if __name__ == "__main__":
+    # determines type of animations (compost, reycle, or landfill)
+    with open('binType.txt','r') as f:
+        r_id = f.read().strip()
+
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
