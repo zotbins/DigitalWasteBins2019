@@ -1,5 +1,5 @@
 """
-Just Testing the branch
+Just Testing the brancht
 Dependencies:
 sudo apt-get install qt5-default
 sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
