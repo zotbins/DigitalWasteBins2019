@@ -1,5 +1,5 @@
 """
-Authors: Owen Yang, Tristan Samonte, Anthony Esmeralda, TingTing Tsai, Alpine Tang, Andy Tran
+Authors: Owen Yang, Tristan Samonte, Anthony Esmeralda, TingTing Tsai, Alpine Tang, Andy Tran, Martin Gomez
 Dependencies:
 sudo apt-get install qt5-default
 sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
