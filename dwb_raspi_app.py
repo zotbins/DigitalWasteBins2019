@@ -1,16 +1,15 @@
 import sys
+import os
+
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
 
-import json
-import time
 import time
 import datetime
 import RPi.GPIO as GPIO
-import subprocess
 
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
@@ -114,15 +113,16 @@ class App(QWidget):
 
         # =======creating the Image Lables=======
         foldername = "images/" + r_id + "/image_ani/"
-        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
-        self.images_list = t.stdout.decode('utf-8').strip().split('\n')
-        self.images_list = [WasteImage(self,obj) for obj in self.images_list] #now a list of image WasteImages
+        #t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
+        t = os.listdir(foldername)
+        self.images_list = list(filter(lambda x: ".png" in x, t ) )
+        self.images_list = [WasteImage(self,foldername+obj) for obj in self.images_list] #now a list of image WasteImages
         self.images_size = len(self.images_list)
 
         foldername = "images/" + r_id + "/dialog_ani/"
-        t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
-        self.dialog_list = t.stdout.decode('utf-8').strip().split('\n')
-        self.dialog_list = [WasteImage(self,obj) for obj in self.dialog_list]
+        t = os.listdir(foldername)
+        self.dialog_list = list(filter(lambda x: ".png" in x, t ) )
+        self.dialog_list = [WasteImage(self,foldername+obj) for obj in self.dialog_list]
         self.dial_size = len(self.dialog_list)
         # ======== new dimensions of pictures =========#
 
