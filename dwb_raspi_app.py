@@ -6,18 +6,38 @@ from PyQt5.QtGui import QPixmap
 from random import randint
 
 import json
+import requests
 import time
 import time
 import datetime
-#import RPi.GPIO as GPIO
+
+SIMULATE_BREAK = None #used to determine if running on Pi or other system
+
+try:
+    import RPi.GPIO as GPIO
+    SIMULATE_BREAK = False
+except:
+    import RPi_DUMMY.GPIO as GPIO
+    SIMULATE_BREAK = True
+
 import RPi_DUMMY.GPIO as GPIO
+SIMULATE_BREAK = True
+
 import subprocess
 
 import sqlite3
 
+sys.path.append('../ZotBins_RaspPi')
+from ZBinClassDev import Dummy
+sys.path.remove('../ZotBins_RaspPi')
+# import importlib.util
+# spec = importlib.util.spec_from_file_location("ZBinClassDev.py", "../ZotBins_RaspPi")
+# zbin = importlib.util.module_from_spec(spec)
+# spec.loader.exec_module(zbin)
+
 #GLOBAL VARIABLES
 GPIO_BREAK = 4
-SIMULATE_BREAK = True
+
 # GPIO.setmode(GPIO.BCM)
 # GPIO.setup(4,GPIO.IN)
 
@@ -69,14 +89,17 @@ class BreakBeamThread(QThread):
                     time.sleep(5)
             else:
                 i = randint(1, 100)
-                if (i % 11 == 0 and i > 0):
-                    print("[BreakBeamThread] break beam triggered: ", i)
+                print("[BreakBeamThread] i = ", i)
+                if (i % 5 == 0 and i > 0):
+                    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                    print("[BreakBeamThread] break beam triggered")
                     print("[BreakBeamThread]: ", datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
                     self.my_signal.emit()
-                    self.add_data_to_local()
-                time.sleep(3)
+                    #self.add_data_to_local(timestamp)
+                    #self.update_tippers()
+                time.sleep(2)
 
-    def add_data_to_local(self):
+    def add_data_to_local(self, timestamp):
         """
         This function adds timestamp, weight, and distance data
         to the SQLite data base located in "/home/pi/ZBinData/zotbin.db"
@@ -84,7 +107,6 @@ class BreakBeamThread(QThread):
         weight<float>: float that represents weight in grams
         distance<float>: float that represents distance in cm
         """
-        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         conn = sqlite3.connect(self.db_path)
         conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
         "TIMESTAMP" TEXT NOT NULL
@@ -93,6 +115,35 @@ class BreakBeamThread(QThread):
         conn.execute("INSERT INTO BREAKBEAM (TIMESTAMP)\nVALUES ('{}')".format(timestamp))
         conn.commit()
         conn.close()
+
+    def update_tippers(self):
+        if SIMULATE_BREAK:
+            print("[ZotBinThread] update_tippers called")
+        else:
+            print("[ZotBinThread] update_tippers called")
+
+        d = list()
+        tippersurl = "http://sensoria.ics.uci.edu:8059/observation/add"
+        headers = {
+        	"Content-Type": "application/json",
+        	"Accept": "application/json"
+        }
+        cmd_str = "SELECT * from BREAKBEAM"
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.execute(cmd_str)
+        for row in cursor:
+            timestamp = row
+            try:
+                d.append({"timestamp": timestamp, "payload": {"time":timestamp},
+                            "sensor_id": "ZotBinBreakBeam", "type": 11})
+            except Exception as e:
+                self.catch(e,"Tippers probably disconnected.")
+                return
+
+        r = requests.post(tippersurl, data=json.dumps(d), headers=headers)
+        #after updating tippers delete from local database
+        conn.execute("DELETE from BREAKBEAM")
+        conn.commit()
 
     def __del__(self):
         self.wait()
@@ -128,8 +179,10 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-	#hides the cursor
+        #hides the cursor
         self.setCursor(Qt.BlankCursor)
+
+        self.ZotBin = Dummy()
 
 
     def initUI(self):
@@ -203,6 +256,14 @@ class App(QWidget):
         self.timer.timeout.connect(self.change_image)
         self.timer.start(5000)
 
+        self.timerLocal = QTimer(self)
+        self.timerLocal.timeout.connect(self.call_dummy_func)
+        self.timerLocal.start(3000) # 5 min
+        #
+        # self.timerTippers = QTimer(self)
+        # self.timerTippers.timeout.connect(self.update_tippers_zbins)
+        # self.timerTippers.start(10000) # 15 min
+
         # ====Showing Widget======
         self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         #self.show()  # uncomment if you don't want fullscreen.
@@ -234,7 +295,34 @@ class App(QWidget):
         #raspi general setup
         if not SIMULATE_BREAK:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(GPIO_BREAK, GPIO.IN)
+            GPIO.setup(GPIO_BspeREAK, GPIO.IN)
+
+    def call_dummy_func():
+        self.ZotBin.do_something()
+
+    # def update_local_zbins(self):
+    #     try:
+    #         #=========Measure the Weight===============================
+    #         weight = self.ZotBin.measure_weight()
+    #         #========Measure the Distance==============================
+    #         distance = self.ZotBin.measure_dist()
+    #         #=========Extract timestamp=================================
+    #         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+    #
+    #         #=========Write to Local===================================
+    #         self.ZotBin.add_data_to_local(timestamp,weight,distance)
+    #         self.BreakThread.add_data_to_local(timestamp)
+    #     except Exception as e:
+    #         self.catch(e)
+    #
+    #
+    # def update_tippers_zbins(self):
+    #     #uploads the local database to tippers.
+    #     #Basically everytime
+    #     t = self.ZotBin
+    #     t.update_tippers(t.weightSensorID,t.weightType,t.ultrasonicSensorID, t.ultrasonicType, t.headers, t.bininfo)
+    #     self.BreakThread.update_tippers()
+
 
 
 if __name__ == "__main__":
