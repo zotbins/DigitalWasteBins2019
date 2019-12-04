@@ -96,7 +96,7 @@ class BreakBeamThread(QThread):
                     print("[BreakBeamThread] break beam triggered")
                     print("[BreakBeamThread]: ", datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
                     self.my_signal.emit()
-                    #self.add_data_to_local(timestamp)
+                    self.add_data_to_local(timestamp)
                     #self.update_tippers()
                 time.sleep(2)
 
