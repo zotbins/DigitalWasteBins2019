@@ -20,9 +20,6 @@ except:
     import RPi_DUMMY.GPIO as GPIO
     SIMULATE_BREAK = True
 
-import RPi_DUMMY.GPIO as GPIO
-SIMULATE_BREAK = True
-
 import subprocess
 
 import sqlite3
@@ -86,15 +83,16 @@ class BreakBeamThread(QThread):
                     while(sensor_state==0):
                         sensor_state = GPIO.input(4)
                     self.my_signal.emit()
-                    self.add_data_to_local()
+                    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                    print("[BreakBeamThread] break beam triggered at: ", timestamp)
+                    self.add_data_to_local(timestamp)
                     time.sleep(5)
             else:
                 i = randint(1, 100)
                 print("[BreakBeamThread] i = ", i)
                 if (i % 5 == 0 and i > 0):
                     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                    print("[BreakBeamThread] break beam triggered")
-                    print("[BreakBeamThread]: ", datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+                    print("[BreakBeamThread] break beam triggered at: ", timestamp)
                     self.my_signal.emit()
                     self.add_data_to_local(timestamp)
                     #self.update_tippers()
@@ -143,7 +141,7 @@ class BreakBeamThread(QThread):
 
         r = requests.post(tippersurl, data=json.dumps(d), headers=headers)
         #after updating tippers delete from local database
-        conn.execute("DELETE from BREAKBEAM")
+        conn.execute("DELETE from BREAKBEAM;")
         conn.commit()
 
     def __del__(self):
@@ -328,12 +326,15 @@ class App(QWidget):
 
 if __name__ == "__main__":
     # determines type of animations (compost, reycle, or landfill)
-    if not SIMULATE_BREAK:
-        with open('binType.txt','r') as f:
-            r_id = f.read().strip()
-    else:
-        r_id = "compost"
+    # if not SIMULATE_BREAK:
+    #     with open('binType.txt','r') as f:
+    #         r_id = f.read().strip()
+    # else:
+    #     r_id = "compost"
     # creating new class
+
+    with open('binType.txt','r') as f:
+        r_id = f.read().strip()
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
