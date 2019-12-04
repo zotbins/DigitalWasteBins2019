@@ -27,13 +27,14 @@ import subprocess
 
 import sqlite3
 
-sys.path.append('../ZotBins_RaspPi')
+MY_ZBIN_PATH = '../ZotBins_RaspPi'
+MY_DB_PATH = '../ZBinData/zotbin.db'
+PI_ZBIN_PATH = '../../ZotBins_RaspPi'
+PI_DB_PATH = '/home/pi/ZBinData/zotbin.db'
+
+sys.path.append(PI_ZBIN_PATH)
 from ZBinClassDev import Dummy
-sys.path.remove('../ZotBins_RaspPi')
-# import importlib.util
-# spec = importlib.util.spec_from_file_location("ZBinClassDev.py", "../ZotBins_RaspPi")
-# zbin = importlib.util.module_from_spec(spec)
-# spec.loader.exec_module(zbin)
+sys.path.remove(PI_ZBIN_PATH)
 
 #GLOBAL VARIABLES
 GPIO_BREAK = 4
@@ -73,9 +74,9 @@ class BreakBeamThread(QThread):
     def __init__(self):
         QThread.__init__(self)
         if SIMULATE_BREAK:
-            self.db_path = "../ZBinData/zotbin.db"
+            self.db_path = PI_DB_PATH
         else:
-            self.db_path = "/home/pi/ZBinData/zotbin.db"
+            self.db_path = PI_DB_PATH
 
     def run(self):
         while True:
