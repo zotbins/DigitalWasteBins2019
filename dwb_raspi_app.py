@@ -298,7 +298,7 @@ class App(QWidget):
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(GPIO_BspeREAK, GPIO.IN)
 
-    def call_dummy_func():
+    def call_dummy_func(self):
         self.ZotBin.do_something()
 
     # def update_local_zbins(self):
