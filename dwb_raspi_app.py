@@ -20,6 +20,8 @@ except:
     import RPi_DUMMY.GPIO as GPIO
     SIMULATE_BREAK = True
 
+SIMULATE_BREAK = True
+
 import subprocess
 
 import sqlite3
