@@ -147,12 +147,12 @@ class App(QWidget):
 
         # defining the animations
         for obj in self.img_anim:
-            obj.setDuration(800) #change this to determine the speed of the animation
+            obj.setDuration(2000) #change this to determine the speed of the animation
             obj.setStartValue(QPointF(10,self.height / 4))
             obj.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
         for obj in self.dialog_anim:
-            obj.setDuration(3500)
+            obj.setDuration(800) #change this to determine the speed of the animation
             obj.setStartValue(QPointF((self.width / 5.5), self.height))
             obj.setEndValue(QPointF((self.width / 5.5), self.height / 3))
 
