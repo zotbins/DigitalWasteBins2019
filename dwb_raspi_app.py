@@ -77,6 +77,10 @@ class BreakBeamThread(QThread):
         else:
             self.db_path = PI_DB_PATH
 
+        if not SIMULATE_BREAK:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(GPIO_BREAK, GPIO.IN)
+
     def run(self):
         while True:
             if not SIMULATE_BREAK:
@@ -183,7 +187,7 @@ class App(QWidget):
         #hides the cursor
         self.setCursor(Qt.BlankCursor)
 
-        self.ZotBin = ZotBins(sendData=True,frequencySec=10,simulate=False)
+        #self.ZotBin = ZotBins(sendData=True,frequencySec=10,simulate=False)
 
 
     def initUI(self):
@@ -296,7 +300,7 @@ class App(QWidget):
         #raspi general setup
         if not SIMULATE_BREAK:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(GPIO_BspeREAK, GPIO.IN)
+            GPIO.setup(GPIO_BREAK, GPIO.IN)
 
     def call_dummy_func(self):
         self.ZotBin.do_something()
