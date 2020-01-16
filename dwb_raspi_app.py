@@ -257,9 +257,9 @@ class App(QWidget):
         self.timer.timeout.connect(self.change_image)
         self.timer.start(5000)
 
-        self.timerLocal = QTimer(self)
-        self.timerLocal.timeout.connect(self.update_local_zbins)
-        self.timerLocal.start(3000) # 5 min
+        # self.timerLocal = QTimer(self)
+        # self.timerLocal.timeout.connect(self.update_local_zbins)
+        # self.timerLocal.start(3000) # 5 min
         #
         # self.timerTippers = QTimer(self)
         # self.timerTippers.timeout.connect(self.update_tippers_zbins)
