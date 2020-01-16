@@ -314,7 +314,7 @@ class App(QWidget):
             self.ZotBin.add_data_to_local(timestamp,weight,distance)
             self.BreakThread.add_data_to_local(timestamp)
         except Exception as e:
-            print([zbinxdwb] error updating local zbins)
+            print("[zbinxdwb] error updating local zbins")
 
     # def update_tippers_zbins(self):
     #     #uploads the local database to tippers.
