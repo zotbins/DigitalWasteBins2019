@@ -32,7 +32,7 @@ PI_ZBIN_PATH = '../../ZotBins_RaspPi'
 PI_DB_PATH = '/home/pi/ZBinData/zotbin.db'
 
 sys.path.append(PI_ZBIN_PATH)
-from ZBinClassDev import Dummy
+from ZBinClassDev import ZotBins
 sys.path.remove(PI_ZBIN_PATH)
 
 #GLOBAL VARIABLES
@@ -183,7 +183,7 @@ class App(QWidget):
         #hides the cursor
         self.setCursor(Qt.BlankCursor)
 
-        self.ZotBin = Dummy()
+        self.ZotBin = ZotBins(sendData=True,frequencySec=10,simulate=False)
 
 
     def initUI(self):
@@ -258,7 +258,7 @@ class App(QWidget):
         self.timer.start(5000)
 
         self.timerLocal = QTimer(self)
-        self.timerLocal.timeout.connect(self.call_dummy_func)
+        self.timerLocal.timeout.connect(self.update_local_zbins)
         self.timerLocal.start(3000) # 5 min
         #
         # self.timerTippers = QTimer(self)
@@ -301,22 +301,21 @@ class App(QWidget):
     def call_dummy_func(self):
         self.ZotBin.do_something()
 
-    # def update_local_zbins(self):
-    #     try:
-    #         #=========Measure the Weight===============================
-    #         weight = self.ZotBin.measure_weight()
-    #         #========Measure the Distance==============================
-    #         distance = self.ZotBin.measure_dist()
-    #         #=========Extract timestamp=================================
-    #         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-    #
-    #         #=========Write to Local===================================
-    #         self.ZotBin.add_data_to_local(timestamp,weight,distance)
-    #         self.BreakThread.add_data_to_local(timestamp)
-    #     except Exception as e:
-    #         self.catch(e)
-    #
-    #
+    def update_local_zbins(self):
+        try:
+            #=========Measure the Weight===============================
+            weight = self.ZotBin.measure_weight()
+            #========Measure the Distance==============================
+            distance = self.ZotBin.measure_dist()
+            #=========Extract timestamp=================================
+            timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+
+            #=========Write to Local===================================
+            self.ZotBin.add_data_to_local(timestamp,weight,distance)
+            self.BreakThread.add_data_to_local(timestamp)
+        except Exception as e:
+            self.catch(e)
+
     # def update_tippers_zbins(self):
     #     #uploads the local database to tippers.
     #     #Basically everytime
