@@ -110,7 +110,7 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-	#hides the cursor
+        #hides the cursor
         self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
@@ -165,7 +165,7 @@ class App(QWidget):
 
         # defining the animations
         for obj in self.img_anim:
-            obj.setDuration(2000)
+            obj.setDuration(2000) #in milliseconds
             obj.setStartValue(QPointF(10,self.height / 4))
             obj.setEndValue(QPointF((self.width / 3.5), self.height / 4))
 
