@@ -101,7 +101,7 @@ class BreakBeamThread(QThread):
             r = requests.post(self.url, data=json.dumps(d), headers=headers)
             print(r.content)
         except Exception as e:
-            self.catch(e,"Tippers probably disconnected.")
+            print(e)
             return
         # for row in cursor:
         #     timestamp = row
