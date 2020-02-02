@@ -53,7 +53,7 @@ class BreakBeamThread(QThread):
         self.url = self.bininfo["tippersurl"]
         self.bin_id = self.bininfo["binID"]
         self.obs_type = 5
-        self.sensor_id = self.binID + 'B'
+        self.sensor_id = self.bin_id + 'B'
         QThread.__init__(self)
 
     def run(self):
