@@ -11,11 +11,15 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 
+
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
 
 r_id = None
+
+JSONPATH = "/home/pi/ZBinData/binData.json"
+DBPATH = "/home/pi/ZBinData/zotbin.db"
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -45,6 +49,11 @@ class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
 
     def __init__(self):
+        self.bininfo = self.parseJSON()
+        self.url = self.bininfo["tippersurl"]
+        self.bin_id = self.bininfo["binID"]
+        self.obs_type = 5
+        self.sensor_id = self.binID + 'B'
         QThread.__init__(self)
 
     def run(self):
@@ -54,8 +63,65 @@ class BreakBeamThread(QThread):
                 while(sensor_state==0):
                     sensor_state = GPIO.input(4)
                 self.my_signal.emit()
-                time.sleep(5)
-                #print(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+                timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                print("[BreakBeamThread] break beam triggered at: ", timestamp)
+                self.update_tippers(timestamp)
+                # time.sleep(5)
+
+    def add_data_to_local(self, timestamp):
+        """
+        This function adds timestamp, weight, and distance data
+        to the SQLite data base located in "/home/pi/ZBinData/zotbin.db"
+        timestamp<str>: in the format '%Y-%m-%d %H:%M:%S'
+        weight<float>: float that represents weight in grams
+        distance<float>: float that represents distance in cm
+        """
+        conn = sqlite3.connect(self.db_path)
+        conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
+        "TIMESTAMP" TEXT NOT NULL
+        );
+        ''')
+        conn.execute("INSERT INTO BREAKBEAM (TIMESTAMP)\nVALUES ('{}')".format(timestamp))
+        conn.commit()
+        conn.close()
+
+    def update_tippers(self, timestamp):
+        d = list()
+        headers = {
+        	"Content-Type": "application/json",
+        	"Accept": "application/json"
+        }
+        #cmd_str = "SELECT * from BREAKBEAM"
+        # conn = sqlite3.connect(self.db_path)
+        # cursor = conn.execute(cmd_str)
+        try:
+            d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+                        "sensor_id": self.sensor_id, "type": self.obs_type})
+        except Exception as e:
+            self.catch(e,"Tippers probably disconnected.")
+            return
+        # for row in cursor:
+        #     timestamp = row
+        #     try:
+        #         d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+        #                     "sensor_id": self.sensor_id, "type": self.obs_type})
+        #     except Exception as e:
+        #         self.catch(e,"Tippers probably disconnected.")
+        #         return
+
+        r = requests.post(tippersurl, data=json.dumps(d), headers=headers)
+        #after updating tippers delete from local database
+        # conn.execute("DELETE from BREAKBEAM;")
+        # conn.commit()
+
+    def parseJSON(self):
+        """
+        This function parses the json file in the absolute path
+        of '/home/pi/ZBinData/binData.json' and returns a dictionary
+        """
+        with open(JSONPATH) as bindata:
+        	bininfo = eval( bindata.read() )["bin"][0]
+        return bininfo
 
     def __del__(self):
         self.wait()
