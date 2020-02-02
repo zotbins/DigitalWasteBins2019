@@ -92,12 +92,14 @@ class BreakBeamThread(QThread):
         	"Content-Type": "application/json",
         	"Accept": "application/json"
         }
+        d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+                    "sensor_id": self.sensor_id, "type": self.obs_type})
         #cmd_str = "SELECT * from BREAKBEAM"
         # conn = sqlite3.connect(self.db_path)
         # cursor = conn.execute(cmd_str)
         try:
-            d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-                        "sensor_id": self.sensor_id, "type": self.obs_type})
+            r = requests.post(self.url, data=json.dumps(d), headers=headers)
+            print(r.content)
         except Exception as e:
             self.catch(e,"Tippers probably disconnected.")
             return
@@ -110,8 +112,7 @@ class BreakBeamThread(QThread):
         #         self.catch(e,"Tippers probably disconnected.")
         #         return
 
-        r = requests.post(self.url, data=json.dumps(d), headers=headers)
-        print(r.content)
+
         #after updating tippers delete from local database
         # conn.execute("DELETE from BREAKBEAM;")
         # conn.commit()
