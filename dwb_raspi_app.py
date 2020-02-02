@@ -111,6 +111,7 @@ class BreakBeamThread(QThread):
         #         return
 
         r = requests.post(self.url, data=json.dumps(d), headers=headers)
+        print(r.content)
         #after updating tippers delete from local database
         # conn.execute("DELETE from BREAKBEAM;")
         # conn.commit()
