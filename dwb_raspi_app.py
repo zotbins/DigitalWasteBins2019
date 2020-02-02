@@ -10,7 +10,7 @@ from random import randint
 import time
 import datetime
 import RPi.GPIO as GPIO
-
+import requests
 
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
