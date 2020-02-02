@@ -109,7 +109,7 @@ class BreakBeamThread(QThread):
         #         self.catch(e,"Tippers probably disconnected.")
         #         return
 
-        r = requests.post(tippersurl, data=json.dumps(d), headers=headers)
+        r = requests.post(url, data=json.dumps(d), headers=headers)
         #after updating tippers delete from local database
         # conn.execute("DELETE from BREAKBEAM;")
         # conn.commit()
