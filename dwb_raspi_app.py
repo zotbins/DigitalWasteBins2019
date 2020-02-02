@@ -67,7 +67,7 @@ class BreakBeamThread(QThread):
                 timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 print("[BreakBeamThread] break beam triggered at: ", timestamp)
                 self.update_tippers(timestamp)
-                # time.sleep(5)
+                time.sleep(2)
 
     def add_data_to_local(self, timestamp):
         """
