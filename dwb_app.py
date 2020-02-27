@@ -26,19 +26,42 @@ https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html
 """
 import sys
 import os
-
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy, QVBoxLayout, QAction, QPushButton
+from PyQt5.QtGui import QMovie
+# from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
+from PyQt5 import QtCore, QtWidgets, QtSvg, QtGui
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 from random import randint
 
 import time
 import datetime
-
+# from timer import Timer
 #GLOBAL VARIABLES
 r_id = None
-
+gifFile = "200.gif"
+class GifPlayer(QWidget):
+    def __init__(self, title, gifFile, parent=None):
+        super().__init__(parent)
+        QWidget.__init__(self, parent)
+        self.movie = QMovie(gifFile, QByteArray(), self)
+        size = self.movie.scaledSize()
+        self.setGeometry(200, 200, size.width(), size.height())
+        self.setWindowTitle(title)
+        self.movie_screen = QLabel()
+        self.movie_screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.movie_screen.setAlignment(Qt.AlignCenter)
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.movie_screen)
+        self.setLayout(main_layout)
+        self.movie.setCacheMode(QMovie.CacheAll)
+        self.movie_screen.setMovie(self.movie)
+        self.movie.start()
+        self.movie.loopCount()
+        self.movie_screen.setMovie(self.movie)
+        self.movie.start()
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
         super().__init__(parent)
@@ -64,18 +87,51 @@ class WasteImage(QLabel):
 
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
+    my_signal_2 = pyqtSignal()
+    my_signal_3 = pyqtSignal()
 
     def __init__(self):
         QThread.__init__(self)
 
     def run(self):
-        i = 0
-        while True:
-            if (i % 11 == 0 and i > 0):
+        input_list = [0,0,1,3,4, 5, 6, 7, 8,9,20,20,3,3,0,1,0]
+        # t = Timer()
+        oldtime = time.time()
+        for i in input_list:
+            if (i > 1):
                 self.my_signal.emit()
-            i = randint(1, 100)
+            elif (i == 0):
+                # t.start()
+                # t.sleep(4)
+                # sleep(40)
+                if time.time() - oldtime > 30:
+                    print("more than 30 sec")
+                    self.my_signal_2.emit()
+            elif (i == 1):
+                # t.start()
+                # t.sleep(4)
+                # sleep(40)
+                self.my_signal_3.emit()
+
+        #             
+ 
+
+            # i = randint(1, 100)
             print(i)
             time.sleep(2)
+        # i = 0
+        # while True:
+        #     if (i % 11 == 0 and i > 0):
+        #         self.my_signal.emit()
+        #     i = randint(1, 100)
+        #     print(i)
+        #     time.sleep(2)
+        # while True:
+            # if (i > 0):
+            #     self.my_signal.emit()
+            # # i = randint(1, 100)
+            # print(i)
+            # time.sleep(2)
 
     def __del__(self):
         self.wait()
@@ -111,22 +167,44 @@ class App(QWidget):
         self.initUI()
 
         #hides the cursor
-        self.setCursor(Qt.BlankCursor)
+        # self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
+        #make a label in main window
+        #DISPLY SVG IMAGE THROUGH THIS
+        # viewer = QtSvg.QSvgWidget(self)
+        # viewer.setGeometry(1150,450,150,150)
+        # viewer.load('trash.svg')
+        # viewer.show()
+        #DISPLY GIF IMAGE THROUGH THIS
+        # label = QLabel(self)
+        # #position it to top right
+        # label.move(950,190)
+        # #initialize the name of the gif file
+        # movie = QMovie("200.gif", QByteArray(), self)
+        # movie.setCacheMode(QMovie.CacheAll)
+        # label.setMovie(movie)
+
+        # movie.start()
+ 
+
 
         # =============Threads================
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
+        self.BreakThread.my_signal_2.connect(self.call_dialog_2)
+        self.BreakThread.my_signal_3.connect(self.call_dialog_3)
 
          # ======= all list defined here ========
         self.images_list = []
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
+        self.wrong_bin =[]
+        self.bin_full = []
 
 
         # =======creating the Image Lables=======
@@ -186,8 +264,8 @@ class App(QWidget):
         self.timer.start(5000)
 
         # ====Showing Widget======
-        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        #self.show()  # uncomment if you don't want fullscreen.
+        # self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -197,11 +275,16 @@ class App(QWidget):
         x = self.imageIndex
         self.images_list[x].show()
         self.img_anim[x].start()
+        
 
     def hide_all(self):
         for obj in self.images_list:
             obj.hide()
         for obj in self.dialog_list:
+            obj.hide()
+        for obj in self.wrong_bin:
+            obj.hide()
+        for obj in self.bin_full:
             obj.hide()
 
 
@@ -212,6 +295,63 @@ class App(QWidget):
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
         self.timer.start(20000)
+    def call_dialog_2(self):
+        self.hide_all()
+        self.timer.stop()
+
+        #Show text
+        l1 = QLabel(self)
+        l2 = QLabel(self)
+        # l1.setGeometry(950,450,300,300)
+        l1.setText("This trash can is full. :(")
+        l2.setText("Please use another one!")
+        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
+        l2.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
+        l1.move(350,400)
+        l2.move(350,500)
+        self.bin_full.append(l1)
+        self.bin_full.append(l2)
+        l1.show()
+        l2.show()
+
+        #SVG IMAGE
+        # viewer = QtSvg.QSvgWidget(self)
+        # viewer.setGeometry(950,450,150,150)
+        # viewer.load('trash.svg')
+        # viewer.show()
+
+        #GIF  
+        l3 = QLabel(self)
+        l3.setGeometry(1020,550,325,325)
+        # l1.move(800,190)
+        # initialize the name of the gif file
+        movie = QMovie("fulltrash.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        l3.show()
+        movie.start()
+    def call_dialog_3(self):
+        self.hide_all()
+        self.timer.stop()
+        l1 = QLabel(self)
+        l1.setText("Wrong Bin! Should be in reycle.")
+        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
+        l1.move(305,400)
+        self.wrong_bin.append(l1)
+        l1.show()
+        l3 = QLabel(self)
+        l3.setGeometry(10,10,500,500)
+        # l1.move(800,190)
+        # initialize the name of the gif file
+        movie = QMovie("wrong.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        self.wrong_bin.append(l3)
+        l3.show()
+        movie.start()
+      
+
+
 
 
 if __name__ == "__main__":
@@ -219,7 +359,21 @@ if __name__ == "__main__":
     with open('binType.txt','r') as f:
         r_id = f.read().strip()
 
+
     # creating new class
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
+
+    # from PyQt5 import QtWidgets
+    # from PyQt5 import QtSvg
+    # import sys
+
+    # app = QtWidgets.QApplication(sys.argv)
+
+    # viewer = QtSvg.QSvgWidget()
+    # viewer.setGeometry(50,50,209,258)
+    # viewer.load('trash.svg')
+    # viewer.show()
+
+    # app.exec()
