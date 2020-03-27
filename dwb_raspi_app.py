@@ -53,6 +53,7 @@ class WasteImage(QLabel):
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
     my_signal_2 = pyqtSignal()
+    my_signal_3 = pyqtSignal()
 
     def __init__(self):
         self.bininfo = self.parseJSON()
@@ -67,18 +68,18 @@ class BreakBeamThread(QThread):
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
                 oldtime = time.time()
-                
+                self.my_signal.emit()
                 while(sensor_state==0):
-                    print("in while loop ")
-                    print(oldtime)
-                    print(time.time())
-                    if ((time.time() - oldtime) > 2):
-                        print("more than 30 sec")
+                    if((time.time() - oldtime) > 3):
                         self.my_signal_2.emit()
-                        exit(0)
+                        time.sleep(10)
+                        break;
+                    
+                        
                         
                     sensor_state = GPIO.input(4)
-                self.my_signal.emit()
+                #self.my_signal.emit()
+                #self.my_signal.emit()
                 timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 print("[BreakBeamThread] break beam triggered at: ", timestamp)
                 
@@ -190,6 +191,7 @@ class App(QWidget):
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
         self.BreakThread.my_signal_2.connect(self.call_dialog_2)
+        self.BreakThread.my_signal_3.connect(self.call_dialog_3)
 
          # ======= all list defined here ========
         self.images_list = []
@@ -197,6 +199,7 @@ class App(QWidget):
         self.img_anim = []
         self.dialog_anim = []
         self.bin_full = []
+        self.wrong_bin =[]
 
 
         # =======creating the Image Lables=======
@@ -275,6 +278,8 @@ class App(QWidget):
             obj.hide()
         for obj in self.bin_full:
             obj.hide()
+        for obj in self.wrong_bin:
+            obj.hide()
 
 
     def call_dialog(self):
@@ -294,10 +299,10 @@ class App(QWidget):
         # l1.setGeometry(950,450,300,300)
         l1.setText("This trash can is full. :(")
         l2.setText("Please use another one!")
-        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l2.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l1.move(500,400)
-        l2.move(550,500)
+        l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l2.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l1.move(120,300)
+        l2.move(120,950)
         self.bin_full.append(l1)
         self.bin_full.append(l2)
         l1.show()
@@ -311,14 +316,35 @@ class App(QWidget):
 
         #GIF  
         l3 = QLabel(self)
-        l3.setGeometry(620,550,325,325)
+        l3.setGeometry(200,360,600,600)
         # l1.move(800,190)
         # initialize the name of the gif file
-        movie = QMovie("fulltrash.gif", QByteArray(), self)
+        movie = QMovie("stop.gif", QByteArray(), self)
         movie.setCacheMode(QMovie.CacheAll)
         l3.setMovie(movie)
         l3.show()
         self.bin_full.append(l3)
+        movie.start()
+        
+    def call_dialog_3(self):
+        print("in call dialog 2")
+        self.hide_all()
+        self.timer.stop()
+        l1 = QLabel(self)
+        l1.setText("Wrong Bin! Should be in reycle.")
+        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
+        l1.move(305,400)
+        self.wrong_bin.append(l1)
+        l1.show()
+        l3 = QLabel(self)
+        l3.setGeometry(10,10,500,500)
+        # l1.move(800,190)
+        # initialize the name of the gif file
+        movie = QMovie("wrong.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        self.wrong_bin.append(l3)
+        l3.show()
         movie.start()
 
 
