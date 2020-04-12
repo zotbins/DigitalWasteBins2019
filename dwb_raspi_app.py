@@ -1,17 +1,19 @@
 import sys
 import os
+import time
+import datetime
+import requests
+import json
 
+# PyQT related imports
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
-from random import randint
 
-import time
-import datetime
+# Raspberry PI Related imports
 import RPi.GPIO as GPIO
-import requests
-import json
+from picamera import PiCamera
 
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
@@ -67,7 +69,21 @@ class BreakBeamThread(QThread):
                 timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 print("[BreakBeamThread] break beam triggered at: ", timestamp)
                 self.update_tippers(timestamp)
-                time.sleep(2)
+                # TODO: take a picture of the trash using our camera and send it to the database
+                self.sendPicture()
+
+    def sendPicture(self):
+        """
+        Take a picture of the trash using our camera and send it to the database
+        """
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        imgName = "dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #""timestamp_<BinID>.jpg"
+
+        camera = PiCamera()
+        camera.start_preview() #warm up the camera
+        time.sleep(2)
+        camera.capture(imgName)
+        camera.stop_preview()
 
     def add_data_to_local(self, timestamp):
         """
@@ -94,28 +110,12 @@ class BreakBeamThread(QThread):
         }
         d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
                     "sensor_id": self.sensor_id, "type": self.obs_type})
-        #cmd_str = "SELECT * from BREAKBEAM"
-        # conn = sqlite3.connect(self.db_path)
-        # cursor = conn.execute(cmd_str)
         try:
             r = requests.post(self.url, data=json.dumps(d), headers=headers)
             print(r.content)
         except Exception as e:
             print(e)
             return
-        # for row in cursor:
-        #     timestamp = row
-        #     try:
-        #         d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-        #                     "sensor_id": self.sensor_id, "type": self.obs_type})
-        #     except Exception as e:
-        #         self.catch(e,"Tippers probably disconnected.")
-        #         return
-
-
-        #after updating tippers delete from local database
-        # conn.execute("DELETE from BREAKBEAM;")
-        # conn.commit()
 
     def parseJSON(self):
         """
