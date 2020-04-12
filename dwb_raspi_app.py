@@ -78,13 +78,17 @@ class BreakBeamThread(QThread):
         Take a picture of the trash using our camera and send it to the database
         """
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        imgName = "images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
-
-        camera = PiCamera()
-        camera.start_preview() #warm up the camera
-        time.sleep(2)
-        camera.capture(imgName)
-        camera.stop_preview()
+        imgName = "./images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
+        try:
+            camera = PiCamera()
+            camera.start_preview() #warm up the camera
+            time.sleep(2)
+            camera.capture(imgName)
+            camera.stop_preview()
+        except Exception as e:
+            time.sleep(2)
+            print(e)
+            return
 
     def add_data_to_local(self, timestamp):
         """
