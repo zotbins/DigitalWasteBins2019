@@ -83,6 +83,7 @@ class BreakBeamThread(QThread):
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         print("[BreakBeamThread] break beam triggered at: ", timestamp)
         self.update_tippers(timestamp)
+
     def _sendPicture(self):
         """
         Take a picture of the trash using our camera and send it to the database.
@@ -95,6 +96,7 @@ class BreakBeamThread(QThread):
             time.sleep(CAMERA_WARMUP_DURATION)
             camera.capture(imgName)
             camera.stop_preview()
+            camera.close()
         except Exception as e:
             time.sleep(BREAKBEAM_COOL_DOWN_TIME)
             print(e)
