@@ -24,6 +24,8 @@ r_id = None
 
 JSONPATH = "/home/pi/ZBinData/binData.json"
 DBPATH = "/home/pi/ZBinData/zotbin.db"
+BREAKBEAM_COOL_DOWN_TIME = 2
+CAMERA_WARMUP_DURATION = 2
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -66,46 +68,37 @@ class BreakBeamThread(QThread):
             if (sensor_state==0):
                 while(sensor_state==0):
                     sensor_state = GPIO.input(4)
+                # === Send Signal to Trigger Dialog Animation ===
                 self.my_signal.emit()
-                timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                print("[BreakBeamThread] break beam triggered at: ", timestamp)
-                self.update_tippers(timestamp)
+                # === Send Current Timestamp to Database ===
+                self._recordBreakBeamData()
+                # === Take Picture of the Trash ===
                 # TODO: take a picture of the trash using our camera and send it to the database
-                self.sendPicture()
+                self._sendPicture()
 
-    def sendPicture(self):
+    def _recordBreakBeamData(self):
         """
-        Take a picture of the trash using our camera and send it to the database
+        Send the current timestamp to the breakbeam database.
+        """
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        print("[BreakBeamThread] break beam triggered at: ", timestamp)
+        self.update_tippers(timestamp)
+    def _sendPicture(self):
+        """
+        Take a picture of the trash using our camera and send it to the database.
         """
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         imgName = "/home/pi/DWB/DigitalWasteBins2019/images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
         try:
             camera = PiCamera()
             camera.start_preview() #warm up the camera
-            time.sleep(5)
+            time.sleep(CAMERA_WARMUP_DURATION)
             camera.capture(imgName)
             camera.stop_preview()
         except Exception as e:
-            time.sleep(2)
+            time.sleep(BREAKBEAM_COOL_DOWN_TIME)
             print(e)
             return
-
-    def add_data_to_local(self, timestamp):
-        """
-        This function adds timestamp, weight, and distance data
-        to the SQLite data base located in "/home/pi/ZBinData/zotbin.db"
-        timestamp<str>: in the format '%Y-%m-%d %H:%M:%S'
-        weight<float>: float that represents weight in grams
-        distance<float>: float that represents distance in cm
-        """
-        conn = sqlite3.connect(self.db_path)
-        conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
-        "TIMESTAMP" TEXT NOT NULL
-        );
-        ''')
-        conn.execute("INSERT INTO BREAKBEAM (TIMESTAMP)\nVALUES ('{}')".format(timestamp))
-        conn.commit()
-        conn.close()
 
     def update_tippers(self, timestamp):
         d = list()
@@ -133,8 +126,6 @@ class BreakBeamThread(QThread):
 
     def __del__(self):
         self.wait()
-
-
 
 class App(QWidget):
     stop_signal = pyqtSignal()
@@ -183,7 +174,6 @@ class App(QWidget):
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
-
 
         # =======creating the Image Lables=======
         foldername = "images/" + r_id + "/image_ani/"
@@ -260,7 +250,6 @@ class App(QWidget):
         for obj in self.dialog_list:
             obj.hide()
 
-
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
         self.hide_all()
@@ -268,7 +257,6 @@ class App(QWidget):
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
         self.timer.start(20000)
-
 
 if __name__ == "__main__":
     # determines type of animations (compost, reycle, or landfill)
