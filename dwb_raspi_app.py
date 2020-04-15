@@ -103,7 +103,7 @@ class BreakBeamThread(QThread):
             camera.stop_preview()
 
             # === Send the Picture to the ZotBins API ==
-            API_response = requests.post(url, files={"file": imgFile})
+            API_response = requests.post(self.url + "/image", files={"file": imgFile})
 
         except Exception as e:
             time.sleep(BREAKBEAM_COOL_DOWN_TIME)
