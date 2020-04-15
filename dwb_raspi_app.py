@@ -90,17 +90,35 @@ class BreakBeamThread(QThread):
         """
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         imgName = "/home/pi/DWB/DigitalWasteBins2019/images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
+
+        imgFile = open(imgName, 'wb')
+        camera = PiCamera()
+
+
         try:
-            camera = PiCamera()
+            # === Take the Picture with the Raspberry Pi ===
             camera.start_preview() #warm up the camera
             time.sleep(CAMERA_WARMUP_DURATION)
-            camera.capture(imgName)
+            camera.capture(imgFile)
             camera.stop_preview()
-            camera.close()
+
+            # === Send the Picture to the ZotBins API ==
+            API_response = requests.post(url, files={"file": imgFile})
+
         except Exception as e:
             time.sleep(BREAKBEAM_COOL_DOWN_TIME)
             print(e)
             return
+        finally:
+            imgFile.close()
+            camera.close()
+
+        # === Delete the Image that was Automatically saved ===
+        # TODO: deal with data backup. Use the API_response variable
+        try:
+            os.remove(imgName)
+        except Exception as e:
+            print(e)
 
     def update_tippers(self, timestamp):
         d = list()
@@ -228,7 +246,7 @@ class App(QWidget):
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
-        # ============QTimer============
+        # ============Animation Related QTimer============
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.change_image)
         self.timer.start(5000)
