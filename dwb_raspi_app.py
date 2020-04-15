@@ -104,10 +104,11 @@ class BreakBeamThread(QThread):
 
             # === Send the Picture to the ZotBins API ==
             API_response = requests.post(self.url + "/image", files={"file": imgFile})
+            print("API Response:", API_response)
 
         except Exception as e:
             time.sleep(BREAKBEAM_COOL_DOWN_TIME)
-            print(e)
+            print("breakbeam:", e)
             return
         finally:
             imgFile.close()
@@ -118,7 +119,7 @@ class BreakBeamThread(QThread):
         try:
             os.remove(imgName)
         except Exception as e:
-            print(e)
+            print("Image Removing:",e)
 
     def update_tippers(self, timestamp):
         d = list()
