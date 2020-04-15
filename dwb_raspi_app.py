@@ -91,24 +91,24 @@ class BreakBeamThread(QThread):
         timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         imgName = "/home/pi/DWB/DigitalWasteBins2019/images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
 
-        imgFile = open(imgName, 'wb')
-        camera = PiCamera()
-
-
         try:
             # === Take the Picture with the Raspberry Pi ===
+            camera = PiCamera()
             camera.start_preview() #warm up the camera
             time.sleep(CAMERA_WARMUP_DURATION)
-            camera.capture(imgFile)
+            camera.capture(imgName)
             camera.stop_preview()
+            camera.close()
 
             # === Send the Picture to the ZotBins API ==
+
+            imgFile = open(imgName, 'wb')
             API_response = requests.post(self.url + "/image", files={"file": imgFile})
             print("API Response:", API_response)
 
         except Exception as e:
             time.sleep(BREAKBEAM_COOL_DOWN_TIME)
-            print("breakbeam:", e)
+            print("error_message":", repr(e))
             return
         finally:
             imgFile.close()
