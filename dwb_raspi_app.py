@@ -73,7 +73,6 @@ class BreakBeamThread(QThread):
                 # === Send Current Timestamp to Database ===
                 self._recordBreakBeamData()
                 # === Take Picture of the Trash ===
-                # TODO: take a picture of the trash using our camera and send it to the database
                 self._sendPicture()
 
     def _recordBreakBeamData(self):
@@ -94,10 +93,10 @@ class BreakBeamThread(QThread):
         try:
             # === Take the Picture with the Raspberry Pi ===
             camera = PiCamera()
-            camera.start_preview() #warm up the camera
-            time.sleep(CAMERA_WARMUP_DURATION)
+            #camera.start_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing.
+            time.sleep(CAMERA_WARMUP_DURATION) # wait for the camera to warm-up
             camera.capture(imgName)
-            camera.stop_preview()
+            #camera.stop_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing. 
             camera.close()
 
             # === Send the Picture to the ZotBins API ==
