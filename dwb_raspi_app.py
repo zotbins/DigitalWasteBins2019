@@ -2,11 +2,15 @@ import sys
 import os
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
+from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
 from random import randint
-
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
+from PyQt5.QtGui import QMovie
+from PyQt5 import QtCore, QtWidgets, QtSvg, QtGui
 import time
 import datetime
 import RPi.GPIO as GPIO
@@ -48,6 +52,8 @@ class WasteImage(QLabel):
 
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
+    my_signal_2 = pyqtSignal()
+    my_signal_3 = pyqtSignal()
 
     def __init__(self):
         self.bininfo = self.parseJSON()
@@ -61,12 +67,24 @@ class BreakBeamThread(QThread):
         while True:
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
-                while(sensor_state==0):
-                    sensor_state = GPIO.input(4)
+                oldtime = time.time()
                 self.my_signal.emit()
+                while(sensor_state==0):
+                    if((time.time() - oldtime) > 3):
+                        self.my_signal_2.emit()
+                        time.sleep(10)
+                        break;
+                    
+                        
+                        
+                    sensor_state = GPIO.input(4)
+                #self.my_signal.emit()
+                #self.my_signal.emit()
                 timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 print("[BreakBeamThread] break beam triggered at: ", timestamp)
-                self.update_tippers(timestamp)
+                
+                        
+                #self.update_tippers(timestamp)
                 time.sleep(2)
 
     def add_data_to_local(self, timestamp):
@@ -86,23 +104,23 @@ class BreakBeamThread(QThread):
         conn.commit()
         conn.close()
 
-    def update_tippers(self, timestamp):
-        d = list()
-        headers = {
-        	"Content-Type": "application/json",
-        	"Accept": "application/json"
-        }
-        d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-                    "sensor_id": self.sensor_id, "type": self.obs_type})
-        #cmd_str = "SELECT * from BREAKBEAM"
-        # conn = sqlite3.connect(self.db_path)
-        # cursor = conn.execute(cmd_str)
-        try:
-            r = requests.post(self.url, data=json.dumps(d), headers=headers)
-            print(r.content)
-        except Exception as e:
-            print(e)
-            return
+#    def update_tippers(self, timestamp):
+#        d = list()
+#        headers = {
+#            "Content-Type": "application/json",
+#            "Accept": "application/json"
+#        }
+#        d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+#                    "sensor_id": self.sensor_id, "type": self.obs_type})
+#        #cmd_str = "SELECT * from BREAKBEAM"
+#        # conn = sqlite3.connect(self.db_path)
+#        # cursor = conn.execute(cmd_str)
+#        try:
+#            r = requests.post(self.url, data=json.dumps(d), headers=headers)
+#            print(r.content)
+#        except Exception as e:
+#            print(e)
+#            return
         # for row in cursor:
         #     timestamp = row
         #     try:
@@ -123,7 +141,7 @@ class BreakBeamThread(QThread):
         of '/home/pi/ZBinData/binData.json' and returns a dictionary
         """
         with open(JSONPATH) as bindata:
-        	bininfo = eval( bindata.read() )["bin"][0]
+            bininfo = eval( bindata.read() )["bin"][0]
         return bininfo
 
     def __del__(self):
@@ -161,7 +179,7 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-	#hides the cursor
+    #hides the cursor
         self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
@@ -172,12 +190,16 @@ class App(QWidget):
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
+        self.BreakThread.my_signal_2.connect(self.call_dialog_2)
+        self.BreakThread.my_signal_3.connect(self.call_dialog_3)
 
          # ======= all list defined here ========
         self.images_list = []
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
+        self.bin_full = []
+        self.wrong_bin =[]
 
 
         # =======creating the Image Lables=======
@@ -237,8 +259,8 @@ class App(QWidget):
         self.timer.start(5000)
 
         # ====Showing Widget======
-        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        #self.show()  # uncomment if you don't want fullscreen.
+        #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -254,6 +276,10 @@ class App(QWidget):
             obj.hide()
         for obj in self.dialog_list:
             obj.hide()
+        for obj in self.bin_full:
+            obj.hide()
+        for obj in self.wrong_bin:
+            obj.hide()
 
 
     def call_dialog(self):
@@ -263,6 +289,63 @@ class App(QWidget):
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
         self.timer.start(20000)
+    def call_dialog_2(self):
+        self.hide_all()
+        self.timer.stop()
+        print("in call dialog 2")
+        #Show text
+        l1 = QLabel(self)
+        l2 = QLabel(self)
+        # l1.setGeometry(950,450,300,300)
+        l1.setText("This trash can is full. :(")
+        l2.setText("Please use another one!")
+        l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l2.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l1.move(120,300)
+        l2.move(120,950)
+        self.bin_full.append(l1)
+        self.bin_full.append(l2)
+        l1.show()
+        l2.show()
+
+        #SVG IMAGE
+        # viewer = QtSvg.QSvgWidget(self)
+        # viewer.setGeometry(950,450,150,150)
+        # viewer.load('trash.svg')
+        # viewer.show()
+
+        #GIF  
+        l3 = QLabel(self)
+        l3.setGeometry(200,360,600,600)
+        # l1.move(800,190)
+        # initialize the name of the gif file
+        movie = QMovie("stop.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        l3.show()
+        self.bin_full.append(l3)
+        movie.start()
+        
+    def call_dialog_3(self):
+        print("in call dialog 2")
+        self.hide_all()
+        self.timer.stop()
+        l1 = QLabel(self)
+        l1.setText("Wrong Bin! Should be in reycle.")
+        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
+        l1.move(305,400)
+        self.wrong_bin.append(l1)
+        l1.show()
+        l3 = QLabel(self)
+        l3.setGeometry(10,10,500,500)
+        # l1.move(800,190)
+        # initialize the name of the gif file
+        movie = QMovie("wrong.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        self.wrong_bin.append(l3)
+        l3.show()
+        movie.start()
 
 
 if __name__ == "__main__":
