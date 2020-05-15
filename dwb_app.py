@@ -31,10 +31,13 @@ from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QSizePolicy, QVBoxLay
 from PyQt5.QtGui import QMovie
 # from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5 import QtCore, QtWidgets, QtSvg, QtGui
-from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
+from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer, pyqtSlot
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 from random import randint
+from playsound import playsound
+# from PyQt4.QtCore import pyqtSlot
+# from PyQt4.QtGui import *
 
 import time
 import datetime
@@ -42,6 +45,7 @@ import datetime
 #GLOBAL VARIABLES
 r_id = None
 gifFile = "200.gif"
+input_list = [3]
 class GifPlayer(QWidget):
     def __init__(self, title, gifFile, parent=None):
         super().__init__(parent)
@@ -89,49 +93,56 @@ class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
     my_signal_2 = pyqtSignal()
     my_signal_3 = pyqtSignal()
+    my_signal_4 = pyqtSignal()
 
     def __init__(self):
         QThread.__init__(self)
 
     def run(self):
-        input_list = [0,0,1,3,4, 5, 6, 7, 8,9,20,20,3,3,0,1,0]
+        # if(self.my_signal_4.emit()):
+        #     p
+
+        # input_list = [0,0,1,3,4, 5, 6, 7, 8,9,20,20,3,3,0,1,0]
+        self.my_signal.emit()
         # t = Timer()
+        
         oldtime = time.time()
-        for i in input_list:
-            if (i > 1):
-                self.my_signal.emit()
-            elif (i == 0):
-                # t.start()
-                # t.sleep(4)
-                # sleep(40)
-                if time.time() - oldtime > 30:
-                    print("more than 30 sec")
+        while(input_list):
+            print("input list: ",input_list)
+            trash_counter = 0
+            for i in input_list:
+                if (i > 1 and i!=4):
+                    
+                    self.my_signal.emit()
+                    # time.sleep(5)
+                elif (i == 0):
+                    trash_counter+=1
+                    input_list.remove(i)
+                    if(trash_counter == 5):
+                        self.my_signal_2.emit()
+                    else:
+                        self.my_signal.emit()
+
+                elif (i == 4):
+                    input_list.remove(i)
                     self.my_signal_2.emit()
-            elif (i == 1):
-                # t.start()
-                # t.sleep(4)
-                # sleep(40)
-                self.my_signal_3.emit()
+                    time.sleep(2)
+                elif (i == 1):
+                    input_list.remove(i)
+                    self.my_signal_3.emit()
 
-        #             
- 
+                
 
-            # i = randint(1, 100)
-            print(i)
-            time.sleep(2)
-        # i = 0
-        # while True:
-        #     if (i % 11 == 0 and i > 0):
-        #         self.my_signal.emit()
-        #     i = randint(1, 100)
-        #     print(i)
-        #     time.sleep(2)
-        # while True:
-            # if (i > 0):
-            #     self.my_signal.emit()
-            # # i = randint(1, 100)
-            # print(i)
-            # time.sleep(2)
+                    # self.my_signal.emit()
+                # input_list.remove(i)
+                print("inside for loop",input_list)
+                print(i)
+                # input_list.remove(i)
+                time.sleep(3)
+
+        #           
+        print("input list is empty: ",input_list)
+
 
     def __del__(self):
         self.wait()
@@ -172,23 +183,7 @@ class App(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        #make a label in main window
-        #DISPLY SVG IMAGE THROUGH THIS
-        # viewer = QtSvg.QSvgWidget(self)
-        # viewer.setGeometry(1150,450,150,150)
-        # viewer.load('trash.svg')
-        # viewer.show()
-        #DISPLY GIF IMAGE THROUGH THIS
-        # label = QLabel(self)
-        # #position it to top right
-        # label.move(950,190)
-        # #initialize the name of the gif file
-        # movie = QMovie("200.gif", QByteArray(), self)
-        # movie.setCacheMode(QMovie.CacheAll)
-        # label.setMovie(movie)
-
-        # movie.start()
- 
+    
 
 
         # =============Threads================
@@ -197,6 +192,8 @@ class App(QWidget):
         self.BreakThread.my_signal.connect(self.call_dialog)
         self.BreakThread.my_signal_2.connect(self.call_dialog_2)
         self.BreakThread.my_signal_3.connect(self.call_dialog_3)
+        self.BreakThread.my_signal_4.connect(self.call_dialog_4)
+
 
          # ======= all list defined here ========
         self.images_list = []
@@ -259,22 +256,28 @@ class App(QWidget):
         background.setPixmap(back_pixmap)
 
         # ============QTimer============
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.change_image)
-        self.timer.start(5000)
+        self.dialogueTimer = QTimer(self)
+        self.dialogueTimer.timeout.connect(self.change_image)
+        print("iafter connecting to change image")
+        self.dialogueTimer.start(5000)
 
+
+        print("shown the image")    
         # ====Showing Widget======
         # self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
         self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
+        print("in change_image function")
         self.imageIndex += 1
         if self.imageIndex >= self.images_size:
             self.imageIndex = 0
         x = self.imageIndex
+        print("about to show the image")
         self.images_list[x].show()
         self.img_anim[x].start()
+        print("after showing the image")
         
 
     def hide_all(self):
@@ -290,57 +293,85 @@ class App(QWidget):
 
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
+        x = randint(0,len(self.images_list)-1)
         self.hide_all()
-        self.timer.stop()
+
+        self.dialogueTimer.stop()
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
-        self.timer.start(20000)
+        self.dialogueTimer.start(20000)
+        # self.images_list[x].show()
+        # self.img_anim[x].start()
+
+        btn = QPushButton('Throw trash',self)
+        wrong_trash_button = QPushButton('Wrong trash',self)
+        trash_full_button = QPushButton('Trash is full',self)
+        @pyqtSlot()
+        def button1_click():
+            input_list.append(0)
+            print("input list after append: ",input_list)
+            self.dialog_list[n].show()      # start the animation of the selected dialogue
+            self.dialog_anim[n].start()
+            # self.dialogueTimer.start(20000)
+
+            ''' Tell when the button is clicked. '''
+            print('clicked')
+         
+        
+        @pyqtSlot()
+        def wrong_trash_button_click():
+            input_list.append(1)
+            print("inwrong trash: ",input_list)
+
+        @pyqtSlot()
+        def trash_full_button_click():
+            input_list.append(4)
+            print("in full trash: ",input_list)
+            
+        btn.resize(100,100)
+        btn.clicked.connect(button1_click)
+        btn.show()
+
+        wrong_trash_button.clicked.connect(wrong_trash_button_click)
+        wrong_trash_button.resize(100,100)
+        wrong_trash_button.move(0,200)
+        wrong_trash_button.show()
+
+        trash_full_button.clicked.connect(trash_full_button_click)
+        trash_full_button.resize(100,100)
+        trash_full_button.move(0,100)
+        trash_full_button.show()
+
+
     def call_dialog_2(self):
         self.hide_all()
-        self.timer.stop()
+        self.dialogueTimer.stop()
 
         #Show text
-        l1 = QLabel(self)
-        l2 = QLabel(self)
-        # l1.setGeometry(950,450,300,300)
-        l1.setText("This trash can is full. :(")
-        l2.setText("Please use another one!")
-        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l2.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l1.move(350,400)
-        l2.move(350,500)
-        self.bin_full.append(l1)
-        self.bin_full.append(l2)
-        l1.show()
-        l2.show()
+        fulltrash_gif = QLabel(self)
+        fulltrash_gif.setGeometry(550,10,900,900)
+        fulltrash_pixmap = QMovie("images/" + r_id + "/fulltrash.gif", QByteArray(), self)
+        fulltrash_pixmap.setCacheMode(QMovie.CacheAll)
+        fulltrash_gif.setMovie(fulltrash_pixmap)
+       
+        self.bin_full.append(fulltrash_gif)
+        fulltrash_gif.show()
+        fulltrash_pixmap.start()
+        playsound('alert.mp3')
+        self.dialogueTimer.start(20000)
 
-        #SVG IMAGE
-        # viewer = QtSvg.QSvgWidget(self)
-        # viewer.setGeometry(950,450,150,150)
-        # viewer.load('trash.svg')
-        # viewer.show()
-
-        #GIF  
-        l3 = QLabel(self)
-        l3.setGeometry(1020,550,325,325)
-        # l1.move(800,190)
-        # initialize the name of the gif file
-        movie = QMovie("fulltrash.gif", QByteArray(), self)
-        movie.setCacheMode(QMovie.CacheAll)
-        l3.setMovie(movie)
-        l3.show()
-        movie.start()
     def call_dialog_3(self):
+        print("in call_dialog_3")
         self.hide_all()
-        self.timer.stop()
+        self.dialogueTimer.stop()
         l1 = QLabel(self)
         l1.setText("Wrong Bin! Should be in reycle.")
         l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l1.move(305,400)
+        l1.move(225,300)
         self.wrong_bin.append(l1)
         l1.show()
         l3 = QLabel(self)
-        l3.setGeometry(10,10,500,500)
+        l3.setGeometry(350,350,650,650)
         # l1.move(800,190)
         # initialize the name of the gif file
         movie = QMovie("wrong.gif", QByteArray(), self)
@@ -349,6 +380,34 @@ class App(QWidget):
         self.wrong_bin.append(l3)
         l3.show()
         movie.start()
+        playsound('Wrong.mp3')
+
+    def call_dialog_4(self):
+        self.hide_all()
+        self.dialogueTimer.stop()
+        btn = QPushButton('Throw trash',self)
+        @pyqtSlot()
+        def on_click():
+            ''' Tell when the button is clicked. '''
+            print('clicked')
+            return 1;
+         
+        @pyqtSlot()
+        def on_press():
+            ''' Tell when the button is pressed. '''
+            print('pressed')
+         
+        @pyqtSlot()
+        def on_release():
+            ''' Tell when the button is released. '''
+            print('released')
+        btn.resize(100,100)
+        btn.clicked.connect(on_click)
+        btn.pressed.connect(on_press)
+        btn.released.connect(on_release)
+        btn.show()
+
+
       
 
 
@@ -365,15 +424,3 @@ if __name__ == "__main__":
     ex = App()
     sys.exit(app.exec_()) # 'exec_' because 'exec' is already a keyword
 
-    # from PyQt5 import QtWidgets
-    # from PyQt5 import QtSvg
-    # import sys
-
-    # app = QtWidgets.QApplication(sys.argv)
-
-    # viewer = QtSvg.QSvgWidget()
-    # viewer.setGeometry(50,50,209,258)
-    # viewer.load('trash.svg')
-    # viewer.show()
-
-    # app.exec()
