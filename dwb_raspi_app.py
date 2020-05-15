@@ -1,21 +1,23 @@
 import sys
 import os
+import time
+import datetime
+import requests
+import json
+from random import randint
 
+# PyQT related imports
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
-from random import randint
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 from PyQt5.QtGui import QMovie
-from PyQt5 import QtCore, QtWidgets, QtSvg, QtGui
-import time
-import datetime
+from PyQt5 import QtCore, QtWidgets, QtGui
+
+# Raspberry PI Related imports
 import RPi.GPIO as GPIO
-import requests
-import json
+from picamera import PiCamera
 
 #GLOBAL VARIABLES
 GPIO.setmode(GPIO.BCM)
@@ -25,6 +27,8 @@ r_id = None
 
 JSONPATH = "/home/pi/ZBinData/binData.json"
 DBPATH = "/home/pi/ZBinData/zotbin.db"
+BREAKBEAM_COOL_DOWN_TIME = 2
+CAMERA_WARMUP_DURATION = 2
 
 class WasteImage(QLabel):
     def __init__(self, parent, image_file):
@@ -78,62 +82,74 @@ class BreakBeamThread(QThread):
                         
                         
                     sensor_state = GPIO.input(4)
-                #self.my_signal.emit()
-                #self.my_signal.emit()
-                timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                print("[BreakBeamThread] break beam triggered at: ", timestamp)
-                
-                        
-                #self.update_tippers(timestamp)
-                time.sleep(2)
 
-    def add_data_to_local(self, timestamp):
+                # === Send Signal to Trigger Dialog Animation ===
+                self.my_signal.emit()
+                # === Send Current Timestamp to Database ===
+                self._recordBreakBeamData()
+                # === Take Picture of the Trash ===
+                self._sendPicture()
+
+    def _recordBreakBeamData(self):
         """
-        This function adds timestamp, weight, and distance data
-        to the SQLite data base located in "/home/pi/ZBinData/zotbin.db"
-        timestamp<str>: in the format '%Y-%m-%d %H:%M:%S'
-        weight<float>: float that represents weight in grams
-        distance<float>: float that represents distance in cm
+        Send the current timestamp to the breakbeam database.
         """
-        conn = sqlite3.connect(self.db_path)
-        conn.execute('''CREATE TABLE IF NOT EXISTS "BREAKBEAM" (
-        "TIMESTAMP" TEXT NOT NULL
-        );
-        ''')
-        conn.execute("INSERT INTO BREAKBEAM (TIMESTAMP)\nVALUES ('{}')".format(timestamp))
-        conn.commit()
-        conn.close()
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        print("[BreakBeamThread] break beam triggered at: ", timestamp)
+        self.update_tippers(timestamp)
 
-   def update_tippers(self, timestamp):
-       d = list()
-       headers = {
-           "Content-Type": "application/json",
-           "Accept": "application/json"
-       }
-       d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-                   "sensor_id": self.sensor_id, "type": self.obs_type})
-       #cmd_str = "SELECT * from BREAKBEAM"
-       # conn = sqlite3.connect(self.db_path)
-       # cursor = conn.execute(cmd_str)
-       try:
-           r = requests.post(self.url, data=json.dumps(d), headers=headers)
-           print(r.content)
-       except Exception as e:
-           print(e)
-           return
-        for row in cursor:
-            timestamp = row
-            try:
-                d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-                            "sensor_id": self.sensor_id, "type": self.obs_type})
-            except Exception as e:
-                self.catch(e,"Tippers probably disconnected.")
-                return
+    def _sendPicture(self):
+        """
+        Take a picture of the trash using our camera and send it to the database.
+        """
+        timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        imgName = "/home/pi/DWB/DigitalWasteBins2019/images/dataPics/"+ timestamp + "_" + self.bin_id + ".jpg" #"<timestamp>_<BinID>.jpg"
+
+        try:
+            # === Take the Picture with the Raspberry Pi ===
+            camera = PiCamera()
+            #camera.start_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing.
+            time.sleep(CAMERA_WARMUP_DURATION) # wait for the camera to warm-up
+            camera.capture(imgName)
+            #camera.stop_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing. 
+            camera.close()
+
+            # === Send the Picture to the ZotBins API ==
+
+            imgFile = open(imgName, 'rb')
+            API_response = requests.post(self.url + "/image", files={"file": imgFile})
+            print("API Response:", API_response)
+
+        except Exception as e:
+            time.sleep(BREAKBEAM_COOL_DOWN_TIME)
+            print("error_message", repr(e))
+            return
+        finally:
+            imgFile.close()
+            camera.close()
+
+        # === Delete the Image that was Automatically saved ===
+        # TODO: deal with data backup. Use the API_response variable
+        try:
+            os.remove(imgName)
+        except Exception as e:
+            print("Image Removing:",e)
 
 
-        #after updating tippers delete from local database
-        # conn.execute("DELETE from BREAKBEAM;")
-        # conn.commit()
+    def update_tippers(self, timestamp):
+        d = list()
+        headers = {
+        	"Content-Type": "application/json",
+        	"Accept": "application/json"
+        }
+        d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+                    "sensor_id": self.sensor_id, "type": self.obs_type})
+        try:
+            r = requests.post(self.url, data=json.dumps(d), headers=headers)
+            print(r.content)
+        except Exception as e:
+            print(e)
+            return
 
     def parseJSON(self):
         """
@@ -146,8 +162,6 @@ class BreakBeamThread(QThread):
 
     def __del__(self):
         self.wait()
-
-
 
 class App(QWidget):
     stop_signal = pyqtSignal()
@@ -201,7 +215,6 @@ class App(QWidget):
         self.bin_full = []
         self.wrong_bin =[]
 
-
         # =======creating the Image Lables=======
         foldername = "images/" + r_id + "/image_ani/"
         #t = subprocess.run("ls {}*.png".format(foldername),shell=True, stdout=subprocess.PIPE)
@@ -253,7 +266,7 @@ class App(QWidget):
         back_pixmap = back_pixmap.scaled(self.width, self.height)
         background.setPixmap(back_pixmap)
 
-        # ============QTimer============
+        # ============Animation Related QTimer============
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.change_image)
         self.timer.start(5000)
@@ -281,7 +294,6 @@ class App(QWidget):
         for obj in self.wrong_bin:
             obj.hide()
 
-
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
         self.hide_all()
@@ -297,7 +309,6 @@ class App(QWidget):
         #Show text
         l1 = QLabel(self)
         l2 = QLabel(self)
-        # l1.setGeometry(950,450,300,300)
         l1.setText("This trash can is full. :(")
         l2.setText("Please use another one!")
         l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
@@ -318,8 +329,6 @@ class App(QWidget):
         #GIF  
         l3 = QLabel(self)
         l3.setGeometry(200,360,600,600)
-        # l1.move(800,190)
-        # initialize the name of the gif file
         movie = QMovie("stop.gif", QByteArray(), self)
         movie.setCacheMode(QMovie.CacheAll)
         l3.setMovie(movie)
@@ -328,7 +337,6 @@ class App(QWidget):
         movie.start()
         
     
-
 
 if __name__ == "__main__":
     # determines type of animations (compost, reycle, or landfill)
