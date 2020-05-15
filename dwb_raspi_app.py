@@ -57,7 +57,7 @@ class WasteImage(QLabel):
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
     my_signal_2 = pyqtSignal()
-    
+
 
     def __init__(self):
         self.bininfo = self.parseJSON()
@@ -78,9 +78,9 @@ class BreakBeamThread(QThread):
                         self.my_signal_2.emit()
                         time.sleep(10)
                         break;
-                    
-                        
-                        
+
+
+
                     sensor_state = GPIO.input(4)
 
                 # === Send Signal to Trigger Dialog Animation ===
@@ -111,7 +111,7 @@ class BreakBeamThread(QThread):
             #camera.start_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing.
             time.sleep(CAMERA_WARMUP_DURATION) # wait for the camera to warm-up
             camera.capture(imgName)
-            #camera.stop_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing. 
+            #camera.stop_preview() #we don't want a preview to overlay on our animations. Only uncomment for testing.
             camera.close()
 
             # === Send the Picture to the ZotBins API ==
@@ -205,7 +205,7 @@ class App(QWidget):
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
         self.BreakThread.my_signal_2.connect(self.call_dialog_2)
-       
+
 
          # ======= all list defined here ========
         self.images_list = []
@@ -272,8 +272,8 @@ class App(QWidget):
         self.timer.start(5000)
 
         # ====Showing Widget======
-        #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        self.show()  # uncomment if you don't want fullscreen.
+        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        #self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -318,7 +318,7 @@ class App(QWidget):
         fulltrash_pixmap.start()
         playsound('alert.mp3')
         self.dialogueTimer.start(20000)
-        
+
 #     def call_dialog_2(self):
 #         self.hide_all()
 #         self.timer.stop()
@@ -343,7 +343,7 @@ class App(QWidget):
         # viewer.load('trash.svg')
         # viewer.show()
 
-        #GIF  
+        #GIF
         l3 = QLabel(self)
         l3.setGeometry(200,360,600,600)
         movie = QMovie("stop.gif", QByteArray(), self)
@@ -352,8 +352,8 @@ class App(QWidget):
         l3.show()
         self.bin_full.append(l3)
         movie.start()
-        
-    
+
+
 
 if __name__ == "__main__":
     # determines type of animations (compost, reycle, or landfill)
