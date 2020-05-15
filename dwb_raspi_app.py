@@ -8,9 +8,12 @@ from random import randint
 
 # PyQT related imports
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
+from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread, pyqtSignal, QObject, QTimer
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QMovie
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 # Raspberry PI Related imports
 import RPi.GPIO as GPIO
@@ -53,6 +56,8 @@ class WasteImage(QLabel):
 
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
+    my_signal_2 = pyqtSignal()
+    
 
     def __init__(self):
         self.bininfo = self.parseJSON()
@@ -66,8 +71,18 @@ class BreakBeamThread(QThread):
         while True:
             sensor_state = GPIO.input(4)
             if (sensor_state==0):
+                oldtime = time.time()
+                self.my_signal.emit()
                 while(sensor_state==0):
+                    if((time.time() - oldtime) > 20):
+                        self.my_signal_2.emit()
+                        time.sleep(10)
+                        break;
+                    
+                        
+                        
                     sensor_state = GPIO.input(4)
+
                 # === Send Signal to Trigger Dialog Animation ===
                 self.my_signal.emit()
                 # === Send Current Timestamp to Database ===
@@ -120,6 +135,7 @@ class BreakBeamThread(QThread):
         except Exception as e:
             print("Image Removing:",e)
 
+
     def update_tippers(self, timestamp):
         d = list()
         headers = {
@@ -141,7 +157,7 @@ class BreakBeamThread(QThread):
         of '/home/pi/ZBinData/binData.json' and returns a dictionary
         """
         with open(JSONPATH) as bindata:
-        	bininfo = eval( bindata.read() )["bin"][0]
+            bininfo = eval( bindata.read() )["bin"][0]
         return bininfo
 
     def __del__(self):
@@ -177,7 +193,7 @@ class App(QWidget):
         # initialized the window
         self.initUI()
 
-	#hides the cursor
+    #hides the cursor
         self.setCursor(Qt.BlankCursor)
 
     def initUI(self):
@@ -188,12 +204,16 @@ class App(QWidget):
         self.BreakThread = BreakBeamThread()
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
+        self.BreakThread.my_signal_2.connect(self.call_dialog_2)
+       
 
          # ======= all list defined here ========
         self.images_list = []
         self.dialog_list = []
         self.img_anim = []
         self.dialog_anim = []
+        self.bin_full = []
+        self.wrong_bin =[]
 
         # =======creating the Image Lables=======
         foldername = "images/" + r_id + "/image_ani/"
@@ -252,8 +272,8 @@ class App(QWidget):
         self.timer.start(5000)
 
         # ====Showing Widget======
-        self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
-        #self.show()  # uncomment if you don't want fullscreen.
+        #self.showFullScreen() #uncomment this later. We do want fullscreen, but after we have a working image
+        self.show()  # uncomment if you don't want fullscreen.
 
     def change_image(self):
         self.hide_all()
@@ -269,6 +289,10 @@ class App(QWidget):
             obj.hide()
         for obj in self.dialog_list:
             obj.hide()
+        for obj in self.bin_full:
+            obj.hide()
+        for obj in self.wrong_bin:
+            obj.hide()
 
     def call_dialog(self):
         n = randint(0, self.dial_size - 1)
@@ -277,6 +301,42 @@ class App(QWidget):
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
         self.timer.start(20000)
+
+    def call_dialog_2(self):
+        self.hide_all()
+        self.timer.stop()
+        print("in call dialog 2")
+        #Show text
+        l1 = QLabel(self)
+        l2 = QLabel(self)
+        l1.setText("This trash can is full. :(")
+        l2.setText("Please use another one!")
+        l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l2.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+        l1.move(120,300)
+        l2.move(120,950)
+        self.bin_full.append(l1)
+        self.bin_full.append(l2)
+        l1.show()
+        l2.show()
+
+        #SVG IMAGE
+        # viewer = QtSvg.QSvgWidget(self)
+        # viewer.setGeometry(950,450,150,150)
+        # viewer.load('trash.svg')
+        # viewer.show()
+
+        #GIF  
+        l3 = QLabel(self)
+        l3.setGeometry(200,360,600,600)
+        movie = QMovie("stop.gif", QByteArray(), self)
+        movie.setCacheMode(QMovie.CacheAll)
+        l3.setMovie(movie)
+        l3.show()
+        self.bin_full.append(l3)
+        movie.start()
+        
+    
 
 if __name__ == "__main__":
     # determines type of animations (compost, reycle, or landfill)
