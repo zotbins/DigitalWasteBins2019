@@ -53,7 +53,7 @@ class WasteImage(QLabel):
 class BreakBeamThread(QThread):
     my_signal = pyqtSignal()
     my_signal_2 = pyqtSignal()
-    my_signal_3 = pyqtSignal()
+    
 
     def __init__(self):
         self.bininfo = self.parseJSON()
@@ -70,7 +70,7 @@ class BreakBeamThread(QThread):
                 oldtime = time.time()
                 self.my_signal.emit()
                 while(sensor_state==0):
-                    if((time.time() - oldtime) > 3):
+                    if((time.time() - oldtime) > 20):
                         self.my_signal_2.emit()
                         time.sleep(10)
                         break;
@@ -104,31 +104,31 @@ class BreakBeamThread(QThread):
         conn.commit()
         conn.close()
 
-#    def update_tippers(self, timestamp):
-#        d = list()
-#        headers = {
-#            "Content-Type": "application/json",
-#            "Accept": "application/json"
-#        }
-#        d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-#                    "sensor_id": self.sensor_id, "type": self.obs_type})
-#        #cmd_str = "SELECT * from BREAKBEAM"
-#        # conn = sqlite3.connect(self.db_path)
-#        # cursor = conn.execute(cmd_str)
-#        try:
-#            r = requests.post(self.url, data=json.dumps(d), headers=headers)
-#            print(r.content)
-#        except Exception as e:
-#            print(e)
-#            return
-        # for row in cursor:
-        #     timestamp = row
-        #     try:
-        #         d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
-        #                     "sensor_id": self.sensor_id, "type": self.obs_type})
-        #     except Exception as e:
-        #         self.catch(e,"Tippers probably disconnected.")
-        #         return
+   def update_tippers(self, timestamp):
+       d = list()
+       headers = {
+           "Content-Type": "application/json",
+           "Accept": "application/json"
+       }
+       d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+                   "sensor_id": self.sensor_id, "type": self.obs_type})
+       #cmd_str = "SELECT * from BREAKBEAM"
+       # conn = sqlite3.connect(self.db_path)
+       # cursor = conn.execute(cmd_str)
+       try:
+           r = requests.post(self.url, data=json.dumps(d), headers=headers)
+           print(r.content)
+       except Exception as e:
+           print(e)
+           return
+        for row in cursor:
+            timestamp = row
+            try:
+                d.append({"timestamp": timestamp, "payload": {"timestamp":timestamp},
+                            "sensor_id": self.sensor_id, "type": self.obs_type})
+            except Exception as e:
+                self.catch(e,"Tippers probably disconnected.")
+                return
 
 
         #after updating tippers delete from local database
@@ -191,7 +191,7 @@ class App(QWidget):
         self.BreakThread.start()
         self.BreakThread.my_signal.connect(self.call_dialog)
         self.BreakThread.my_signal_2.connect(self.call_dialog_2)
-        self.BreakThread.my_signal_3.connect(self.call_dialog_3)
+       
 
          # ======= all list defined here ========
         self.images_list = []
@@ -289,6 +289,7 @@ class App(QWidget):
         self.dialog_list[n].show()      # start the animation of the selected dialogue
         self.dialog_anim[n].start()
         self.timer.start(20000)
+
     def call_dialog_2(self):
         self.hide_all()
         self.timer.stop()
@@ -326,26 +327,7 @@ class App(QWidget):
         self.bin_full.append(l3)
         movie.start()
         
-    def call_dialog_3(self):
-        print("in call dialog 2")
-        self.hide_all()
-        self.timer.stop()
-        l1 = QLabel(self)
-        l1.setText("Wrong Bin! Should be in reycle.")
-        l1.setFont(QtGui.QFont("Arial", 61, QtGui.QFont.Bold))
-        l1.move(305,400)
-        self.wrong_bin.append(l1)
-        l1.show()
-        l3 = QLabel(self)
-        l3.setGeometry(10,10,500,500)
-        # l1.move(800,190)
-        # initialize the name of the gif file
-        movie = QMovie("wrong.gif", QByteArray(), self)
-        movie.setCacheMode(QMovie.CacheAll)
-        l3.setMovie(movie)
-        self.wrong_bin.append(l3)
-        l3.show()
-        movie.start()
+    
 
 
 if __name__ == "__main__":
