@@ -304,21 +304,38 @@ class App(QWidget):
 
     def call_dialog_2(self):
         self.hide_all()
-        self.timer.stop()
-        print("in call dialog 2")
+        self.dialogueTimer.stop()
+
         #Show text
-        l1 = QLabel(self)
-        l2 = QLabel(self)
-        l1.setText("This trash can is full. :(")
-        l2.setText("Please use another one!")
-        l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
-        l2.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
-        l1.move(120,300)
-        l2.move(120,950)
-        self.bin_full.append(l1)
-        self.bin_full.append(l2)
-        l1.show()
-        l2.show()
+        fulltrash_gif = QLabel(self)
+        fulltrash_gif.setGeometry(self.width/5.5, self.height/3,self.width/ 1.5, self.height / 1.5)
+        fulltrash_pixmap = QMovie("images/" + r_id + "/fulltrash.gif", QByteArray(), self)
+        fulltrash_pixmap.setCacheMode(QMovie.CacheAll)
+        fulltrash_gif.setMovie(fulltrash_pixmap)
+
+        self.bin_full.append(fulltrash_gif)
+        fulltrash_gif.show()
+        fulltrash_pixmap.start()
+        playsound('alert.mp3')
+        self.dialogueTimer.start(20000)
+        
+#     def call_dialog_2(self):
+#         self.hide_all()
+#         self.timer.stop()
+#         print("in call dialog 2")
+#         #Show text
+#         l1 = QLabel(self)
+#         l2 = QLabel(self)
+#         l1.setText("This trash can is full. :(")
+#         l2.setText("Please use another one!")
+#         l1.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+#         l2.setFont(QtGui.QFont("Arial", 50, QtGui.QFont.Bold))
+#         l1.move(120,300)
+#         l2.move(120,950)
+#         self.bin_full.append(l1)
+#         self.bin_full.append(l2)
+#         l1.show()
+#         l2.show()
 
         #SVG IMAGE
         # viewer = QtSvg.QSvgWidget(self)
