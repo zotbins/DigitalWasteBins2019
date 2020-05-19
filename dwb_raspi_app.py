@@ -304,7 +304,7 @@ class App(QWidget):
 
     def call_dialog_2(self):
         self.hide_all()
-        self.dialogueTimer.stop()
+        self.timer.stop()
 
         #Show text
         fulltrash_gif = QLabel(self)
@@ -317,7 +317,7 @@ class App(QWidget):
         fulltrash_gif.show()
         fulltrash_pixmap.start()
         playsound('alert.mp3')
-        self.dialogueTimer.start(20000)
+        self.timer.start(20000)
 
 #     def call_dialog_2(self):
 #         self.hide_all()
