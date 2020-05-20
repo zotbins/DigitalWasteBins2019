@@ -5,7 +5,7 @@ import datetime
 import requests
 import json
 from random import randint
-
+from playsound import playsound
 # PyQT related imports
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
