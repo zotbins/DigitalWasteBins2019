@@ -344,14 +344,14 @@ class App(QWidget):
         # viewer.show()
 
         #GIF
-        l3 = QLabel(self)
-        l3.setGeometry(200,360,600,600)
-        movie = QMovie("stop.gif", QByteArray(), self)
-        movie.setCacheMode(QMovie.CacheAll)
-        l3.setMovie(movie)
-        l3.show()
-        self.bin_full.append(l3)
-        movie.start()
+#         l3 = QLabel(self)
+#         l3.setGeometry(200,360,600,600)
+#         movie = QMovie("stop.gif", QByteArray(), self)
+#         movie.setCacheMode(QMovie.CacheAll)
+#         l3.setMovie(movie)
+#         l3.show()
+#         self.bin_full.append(l3)
+#         movie.start()
 
 
 
