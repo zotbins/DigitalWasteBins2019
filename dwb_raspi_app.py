@@ -5,7 +5,7 @@ import datetime
 import requests
 import json
 from random import randint
-from playsound import playsound
+
 # PyQT related imports
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5.QtCore import Qt, QByteArray, QSettings, QTimer, pyqtSlot
@@ -14,6 +14,7 @@ from PyQt5.QtCore import QPropertyAnimation, QPointF, pyqtProperty, Qt, QThread,
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QMovie
 from PyQt5 import QtCore, QtWidgets, QtGui
+import pygame
 
 # Raspberry PI Related imports
 import RPi.GPIO as GPIO
@@ -316,7 +317,12 @@ class App(QWidget):
         self.bin_full.append(fulltrash_gif)
         fulltrash_gif.show()
         fulltrash_pixmap.start()
-        playsound('alert.mp3')
+        # Uncomment to play sound
+#         pygame.mixer.init()
+#         pygame.mixer.music.load("myFile.wav")
+#         pygame.mixer.music.play()
+#         while pygame.mixer.music.get_busy() == True:
+#             continue
         self.timer.start(20000)
 
 #     def call_dialog_2(self):
